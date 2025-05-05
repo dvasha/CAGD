@@ -1,2 +1,0 @@
-﻿demo.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
-  demo.vcxproj -> C:\Users\sosin\Documents\University\2020-S02\CAGD\Skeleton C 2017\demo\.\Debug\demo.exe
