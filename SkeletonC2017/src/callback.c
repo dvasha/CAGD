@@ -87,7 +87,7 @@ static LRESULT CALLBACK command(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
       openFileName.hwndOwner = auxGetHWND();
       openFileName.lpstrTitle = "Load File";
       if(GetOpenFileName(&openFileName))
-	    callback(CAGD_LOADFILE, (int)openFileName.lpstrFile, 0);
+	callback(CAGD_LOADFILE, (int)openFileName.lpstrFile, 0);
       return 0;
     case CAGD_SAVE:
       openFileName.hwndOwner = auxGetHWND();

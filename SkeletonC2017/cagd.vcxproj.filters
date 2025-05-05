@@ -24,15 +24,9 @@
     <ClCompile Include="src\segment.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\lab1\Expr2tree\expr2tree.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\cagd.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\lab1\Expr2tree\expr2tree.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

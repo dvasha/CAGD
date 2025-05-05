@@ -1,7 +1,6 @@
 #include <cagd.h>
 #include <stdio.h>
 #include "resource.h"
-#include <expr2tree.h>
 
 #if defined(_WIN32)
     #if _MSC_VER >= 1900
@@ -17,9 +16,6 @@ enum {
 	MY_ADD,
 	MY_COLOR,
 	MY_REMOVE,
-	MY_HAPPY,
-	MY_SAD,
-	MY_COORD,
 };
 
 char *animText[] = {
@@ -196,108 +192,6 @@ void myPolyLeftDown(int x, int y, PVOID userData)
 	cagdRedraw();
 }
 
-void myLoad(int x, int y, PVOID userData) {
-	printf("I'm happy!\n");
-
-}
-
-
-void myHappy(int x, int y, PVOID userData) {
-	printf("I'm happy!\n");
-}
-void mySad(int x, int y, PVOID userData) {
-	printf("I'm sad!\n");
-}
-
-
-void myRead(int x, int y, PVOID userData) {
-
-	FILE* fptr;
-	int ln = 0;
-	char x_line[1024], y_line[1024], z_line[1024], t_line[1024], tmp[1024];
-	e2t_expr_node* x_tree, *y_tree, *z_tree;
-	double domain_min, domain_max, step, step_granularity = 100, x_point, y_point, z_point;
-	CAGD_POINT m_pts[100];
-
-	fptr = fopen((char*)x, "r");
-	if (fptr) {
-		while (fgets(tmp, 1024, fptr)) {
-			if (tmp[0] == '#') {
-				continue;
-			}
-			if (tmp[0] == '\n') {
-				continue;
-			}
-			else {
-				switch (ln) {
-				case 0:
-					strcpy(x_line, tmp);
-					ln++;
-					break;
-				case 1:
-					strcpy(y_line, tmp);
-					ln++;
-					break;
-				case 2:
-					strcpy(z_line, tmp);
-					ln++;
-					break;
-				case 3:
-					strcpy(t_line, tmp);
-					ln++;
-					break;
-				default:
-					printf("huh??");
-				}
-			}
-		}
-		fclose(fptr);
-	}
-	
-	
-	x_line[strlen(x_line) - 1] = 0;
-	y_line[strlen(y_line) - 1] = 0;
-	z_line[strlen(z_line) - 1] = 0;
-	// get trees
-	x_tree = e2t_expr2tree(x_line);
-	if (!x_tree) {
-		printf("Error %d\n", e2t_parsing_error);
-	}
-	y_tree = e2t_expr2tree(y_line);
-	if (!y_tree) {
-		printf("Error %d\n", e2t_parsing_error);
-	}
-	z_tree = e2t_expr2tree(z_line);
-	if (!z_tree) {
-		printf("Error %d\n", e2t_parsing_error);
-	}
-	
-	sscanf(t_line, "%lf %lf\n", &domain_min, &domain_max);
-	
-	e2t_printtree(x_tree, 0);
-	printf("\n");
-	e2t_printtree(y_tree, 0);
-	printf("\n");
-	e2t_printtree(z_tree, 0);
-	printf("\n");
-
-	step = (domain_max - domain_min) / 100;
-	ln = 0;
-
-	for (double i = domain_min; i <= domain_max; i = i + step) {
-		e2t_setparamvalue(i, E2T_PARAM_T);
-		x_point = e2t_evaltree(x_tree);
-		y_point = e2t_evaltree(y_tree);
-		z_point = e2t_evaltree(z_tree);
-		printf("(%lf, %lf, %lf)\n", x_point, y_point, z_point);
-		m_pts[ln] = (CAGD_POINT){.x = x_point, .y= y_point, .z=z_point};
-			ln++;
-	}
-	
-	cagdAddPolyline(m_pts, sizeof(m_pts) / sizeof(CAGD_POINT));
-	cagdRedraw();
-}
-
 void myCommand(int id, int unUsed, PVOID userData)
 {
 	int i;
@@ -365,59 +259,9 @@ void myCommand(int id, int unUsed, PVOID userData)
 			cagdShowHelp();
 			cagdRegisterCallback(CAGD_LBUTTONDOWN, myPolyLeftDown, NULL);
 			break;
-		case MY_HAPPY:
-			printf("I'm happily initizlized!\n");
-			CAGD_POINT ox[] = { {0,0,0},{1,0,0} };
-			CAGD_POINT oy[] = { {0,0,0}, {0,1,0} };
-			CAGD_POINT oz[] = { {0,0,0},{0,0,1} };
-			CAGD_POINT t[] = { {0,0,0} };
-			
-
-			cagdSetColor(255, 255, 255);
-			cagdAddPoint(ox);
-			cagdAddText(ox, "_");
-			cagdRedraw();
-
-			t->x = 1;
-			t->y = 0;
-			t->z = 0;
-			cagdSetColor(255, 0, 0);
-			cagdAddPoint(t);
-			cagdAddText(t, "X");
-			cagdAddPolyline(ox, 2);
-			cagdRedraw();
-
-			t->x = 0;
-			t->y = 1;
-			t->z = 0;
-			cagdSetColor(0, 255, 0);
-			cagdAddPoint(t);
-			cagdAddText(t, "Y");
-			cagdAddPolyline(oy, 2);
-			cagdRedraw();
-
-			t->x = 0;
-			t->y = 0;
-			t->z = 1;
-			cagdSetColor(0, 0,255);
-			cagdAddPoint(t);
-			cagdAddText(t, "Z");
-			cagdAddPolyline(oz, 2);
-			cagdRedraw();
-			
-			//cagdRegisterCallback(CAGD_LBUTTONDOWN, myHappy, NULL);
-			break;
-		case MY_SAD:
-			printf("I'm sadly initialized!\n");
-			cagdRegisterCallback(CAGD_LBUTTONDOWN, mySad, NULL);
-			break;
-	
-		
 	}
 	cagdRedraw();
 }
-
-
 
 int main(int argc, char *argv[])
 {
@@ -437,17 +281,7 @@ int main(int argc, char *argv[])
 	AppendMenu(myPopup, MF_STRING, MY_COLOR, "Change color...");
 	AppendMenu(myPopup, MF_STRING, MY_REMOVE, "Remove");
 	cagdRegisterCallback(CAGD_MENU, myCommand, (PVOID)hMenu);
-	// New
-	HMENU dMenu = CreatePopupMenu();
-	AppendMenu(dMenu, MF_STRING, MY_HAPPY, "Print Happy");
-	AppendMenu(dMenu, MF_STRING, MY_SAD, "Print sad");
-	cagdRegisterCallback(CAGD_MENU, myCommand, (PVOID)dMenu);
-	cagdAppendMenu(dMenu, "Dvash");
-	cagdRegisterCallback(CAGD_MENU, myCommand, (PVOID)myPopup);
-	cagdRegisterCallback(CAGD_LOADFILE, myRead, NULL);
-	cagdAppendMenu(myPopup, "New");
-	// end
-	//cagdShowHelp();
+	cagdShowHelp();
 	cagdMainLoop();
 	return 0;
 }
