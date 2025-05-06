@@ -1,23 +1,18 @@
 ﻿  demo.c
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(117): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(112): warning C4101: 'Tx_pt': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(112): warning C4101: 'Ty_py': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(112): warning C4101: 'Tz_pt': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(195): warning C4101: 'domain_minTmp': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(195): warning C4101: 'domain_maxTmp': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(194): warning C4101: 'stepSizeTmp': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(337): warning C4101: 'red': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(337): warning C4101: 'blue': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(337): warning C4101: 'green': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(417): warning C4101: 'Tx_tree': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(418): warning C4101: 'Ny_tree': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(418): warning C4101: 'Nx_tree': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(417): warning C4101: 'Ty_tree': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(417): warning C4101: 'Tz_tree': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(418): warning C4101: 'Nz_tree': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(459): warning C4700: uninitialized local variable 'Tx_point' used
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(459): warning C4700: uninitialized local variable 'Ty_point' used
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(459): warning C4700: uninitialized local variable 'Tz_point' used
-  Source.cpp
-demo.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(150): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(326): warning C4101: 'domain_minTmp': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(326): warning C4101: 'domain_maxTmp': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(325): warning C4101: 'stepSizeTmp': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(468): warning C4101: 'red': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(468): warning C4101: 'blue': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(468): warning C4101: 'green': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(579): warning C4101: 'Tx_tree': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(580): warning C4101: 'Ny_tree': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(580): warning C4101: 'Nx_tree': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(579): warning C4101: 'Ty_tree': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(579): warning C4101: 'Tz_tree': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(580): warning C4101: 'Nz_tree': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(621): warning C4700: uninitialized local variable 'Tx_point' used
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(621): warning C4700: uninitialized local variable 'Ty_point' used
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(621): warning C4700: uninitialized local variable 'Tz_point' used
   demo.vcxproj -> C:\Users\DVASH\OneDrive - Technion\Spring25\CAGD\CAGD\demo\.\Debug\demo.exe

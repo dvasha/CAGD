@@ -76,8 +76,26 @@ FILE* fptr;
 double domain_min, domain_max;
 double stepSize = 0.1;
 int numOfPoints;
-UINT *id_pts, id_curve, id_curvature, id_torsion;
+UINT *id_pts, id_curve, id_curvature, id_torsion, *id_trihedron_T, *id_trihedron_N, *id_trihedron_B;
 
+void freeGlobals() {
+	if (id_pts) {
+		free(id_pts);
+		id_pts = NULL;
+	}
+	if (id_trihedron_B) {
+		free(id_trihedron_B);
+		id_trihedron_B = NULL;
+	}
+	if (id_trihedron_N) {
+		free(id_trihedron_N);
+		id_trihedron_N = NULL;
+	}
+	if (id_trihedron_T) {
+		free(id_trihedron_T);
+		id_trihedron_T = NULL;
+	}
+}
 
 void myMessage(PSTR title, PSTR message, UINT type)
 {
@@ -106,27 +124,58 @@ e2t_expr_node* buildTreeFromLine(char* line) {
 void myCreateCAGD() {
 	cagdFreeAllSegments();
 	cagdReset();
+	CAGD_POINT poly_tmp_pts[2];
+	double asserter;
+	double scale = 0.2;
+	int index = 0;
+	boolean isPlanar = FALSE;
 
 	CAGD_POINT* my_pts, tmp_pt;
 	double x_pt, y_pt, z_pt;
-	double Tx_pt, Ty_py, Tz_pt;
-	double paramt = 0;
-	int index = 0;
 	e2t_expr_node* x_tree, *y_tree, *z_tree;
 
+	CAGD_POINT* Tmy_pts;
+	double Tx_pt, Ty_pt, Tz_pt;
+	double vector_size = 0;
+	e2t_expr_node* Tx_tree, *Ty_tree, *Tz_tree;
+
+	CAGD_POINT* Nmy_pts;
+	double Nx_pt, Ny_pt, Nz_pt;
+	double kappa = 0;
+	e2t_expr_node* Nx_tree, *Ny_tree, *Nz_tree;
+
+	CAGD_POINT* Bmy_pts;
+	double Bx_pt, By_pt, Bz_pt;
+	
 	numOfPoints = floor((domain_max - domain_min) / stepSize);
-
-	if (id_pts) {
-		free(id_pts);
+	asserter = stepSize * numOfPoints + domain_min;
+	if (domain_max < asserter) {
+		printf("too many points \n");
 	}
+	freeGlobals();
+	
+
+	my_pts = (CAGD_POINT *)malloc(sizeof(CAGD_POINT) * (numOfPoints));
+	Tmy_pts = (CAGD_POINT *)malloc(sizeof(CAGD_POINT) * (numOfPoints));
+	Nmy_pts = (CAGD_POINT *)malloc(sizeof(CAGD_POINT) * (numOfPoints));
+	Bmy_pts = (CAGD_POINT *)malloc(sizeof(CAGD_POINT) * (numOfPoints));
+
 	id_pts = (UINT*)malloc(sizeof(UINT) * (numOfPoints));
-
-	my_pts = (CAGD_POINT *)malloc(sizeof(CAGD_POINT) * (numOfPoints + 1));
-
+	id_trihedron_T = (UINT*)malloc(sizeof(UINT) * (numOfPoints));
+	id_trihedron_N = (UINT*)malloc(sizeof(UINT) * (numOfPoints));
+	id_trihedron_B = (UINT*)malloc(sizeof(UINT) * (numOfPoints));
 
 	x_tree = buildTreeFromLine(x_line);
 	y_tree = buildTreeFromLine(y_line);
 	z_tree = buildTreeFromLine(z_line);
+
+	Tx_tree = e2t_derivtree(x_tree, E2T_PARAM_T);
+	Ty_tree = e2t_derivtree(y_tree, E2T_PARAM_T);
+	Tz_tree = e2t_derivtree(z_tree, E2T_PARAM_T);
+
+	Nx_tree = e2t_derivtree(Tx_tree, E2T_PARAM_T);
+	Ny_tree = e2t_derivtree(Ty_tree, E2T_PARAM_T);
+	Nz_tree = e2t_derivtree(Tz_tree, E2T_PARAM_T);
 
 	for (index = 0; index < numOfPoints; index++) {
 		e2t_setparamvalue(stepSize * index + domain_min, E2T_PARAM_T);
@@ -137,14 +186,96 @@ void myCreateCAGD() {
 		tmp_pt = (CAGD_POINT) { .x = x_pt, .y = y_pt, .z = z_pt };
 		my_pts[index] = tmp_pt;
 		id_pts[index] = cagdAddPoint(&tmp_pt);
+
 	}
-	my_pts[index] = my_pts[0];
+	cagdSetColor(255, 0, 0);
+	for (index = 0; index < numOfPoints; index++) {
+		e2t_setparamvalue(stepSize * index + domain_min, E2T_PARAM_T);
 
+		Tx_pt = e2t_evaltree(Tx_tree);
+		Ty_pt = e2t_evaltree(Ty_tree);
+		Tz_pt = e2t_evaltree(Tz_tree);
 
-	id_curve = cagdAddPolyline(my_pts, numOfPoints + 1);
+		vector_size = sqrt(Tx_pt*Tx_pt + Ty_pt * Ty_pt + Tz_pt * Tz_pt);
+		Tx_pt = Tx_pt / vector_size;
+		Ty_pt = Ty_pt / vector_size;
+		Tz_pt = Tz_pt / vector_size;
+
+		tmp_pt = (CAGD_POINT) { .x = Tx_pt, .y = Ty_pt, .z = Tz_pt };
+		Tmy_pts[index] = tmp_pt;
+
+		poly_tmp_pts[0] = my_pts[index];
+		poly_tmp_pts[1] = (CAGD_POINT) {
+			.x = my_pts[index].x + Tx_pt*scale ,
+				.y = my_pts[index].y + Ty_pt*scale,
+				.z = my_pts[index].z + Tz_pt*scale, 
+		};
+
+		id_trihedron_T[index] = cagdAddPolyline(poly_tmp_pts, 2);
+	}
+	cagdSetColor(0, 255, 0);
+	for (index = 0; index < numOfPoints; index++) {
+		e2t_setparamvalue(stepSize * index + domain_min, E2T_PARAM_T);
+		
+		Nx_pt = e2t_evaltree(Nx_tree);
+		Ny_pt = e2t_evaltree(Ny_tree);
+		Nz_pt = e2t_evaltree(Nz_tree);
+
+		kappa = sqrt(Nx_pt*Nx_pt + Ny_pt * Ny_pt + Nz_pt * Nz_pt);
+		Nx_pt = Nx_pt / kappa;
+		Ny_pt = Ny_pt / kappa;
+		Nz_pt = Nz_pt / kappa;
+
+		tmp_pt = (CAGD_POINT) { .x = Nx_pt, .y = Ny_pt, .z = Nz_pt };
+		Nmy_pts[index] = tmp_pt;
+
+		poly_tmp_pts[0] = my_pts[index];
+		poly_tmp_pts[1] = (CAGD_POINT) {
+			.x = my_pts[index].x +Nx_pt*scale,
+				.y = my_pts[index].y + Ny_pt*scale,
+				.z = my_pts[index].z + Nz_pt*scale,
+		};
+
+		id_trihedron_N[index] = cagdAddPolyline(poly_tmp_pts, 2);
+
+	}
+	cagdSetColor(0, 0, 255);
+	for (index = 0; index < numOfPoints; index++) {
+		e2t_setparamvalue(stepSize * index + domain_min, E2T_PARAM_T);
+		
+		Bx_pt = (Tmy_pts[index].y) * (Nmy_pts[index].z) - (Tmy_pts[index].z) * (Nmy_pts[index].y); 
+		By_pt = (Tmy_pts[index].z) * (Nmy_pts[index].x) - (Tmy_pts[index].x) * (Nmy_pts[index].z);
+		Bz_pt = (Tmy_pts[index].x) * (Nmy_pts[index].y) - (Tmy_pts[index].y) * (Nmy_pts[index].x);
+
+		tmp_pt = (CAGD_POINT) { .x = Bx_pt, .y = By_pt, .z = Bz_pt };
+		Bmy_pts[index] = tmp_pt;
+		poly_tmp_pts[0] = my_pts[index];
+		poly_tmp_pts[1] = (CAGD_POINT) {
+			.x = my_pts[index].x + Bx_pt *scale,
+				.y = my_pts[index].y + By_pt*scale,
+				.z = my_pts[index].z + Bz_pt *scale,
+		};
+
+		id_trihedron_B[index] = cagdAddPolyline(poly_tmp_pts, 2);
+	}
+
+	
+	cagdSetColor(255, 255, 255);
+
+	id_curve = cagdAddPolyline(my_pts, numOfPoints );
 
 
 	free(my_pts);
+	e2t_freetree(x_tree);
+	e2t_freetree(y_tree);
+	e2t_freetree(z_tree);
+	e2t_freetree(Tx_tree);
+	e2t_freetree(Ty_tree);
+	e2t_freetree(Tz_tree);
+	e2t_freetree(Nx_tree);
+	e2t_freetree(Ny_tree);
+	e2t_freetree(Nz_tree);
+
 
 }
 
@@ -375,6 +506,37 @@ void myFrenet(int id, int unUsed, PVOID userData) {
 		
 		break;
 	case FRENET_TRIHEDRON:
+		if (id_trihedron_T && id_trihedron_B && id_trihedron_N) {
+			if (newState == MF_CHECKED) {
+
+				for (int pointIndex = 0; pointIndex < numOfPoints; pointIndex++) {
+					if (!cagdShowSegment(id_trihedron_T[pointIndex])) {
+						printf("ERROR: can't show T!\n");
+					}
+					if (!cagdShowSegment(id_trihedron_N[pointIndex])) {
+						printf("ERROR: can't show N!\n");
+					}
+					if (!cagdShowSegment(id_trihedron_B[pointIndex])) {
+						printf("ERROR: can't show B!\n");
+					}
+				}
+			}
+			else {
+				for (int pointIndex = 0; pointIndex < numOfPoints; pointIndex++) {
+					if (!cagdHideSegment(id_trihedron_T[pointIndex])) {
+						printf("ERROR: can't hide T!\n");
+					}
+					if (!cagdHideSegment(id_trihedron_N[pointIndex])) {
+						printf("ERROR: can't hide N!\n");
+					}
+					if (!cagdHideSegment(id_trihedron_B[pointIndex])) {
+						printf("ERROR: can't hide B!\n");
+					}
+				}
+
+			}
+		}
+		
 		break;
 	case FRENET_CURVATURE:
 		break;
@@ -467,6 +629,61 @@ void tmp() {
 		m_pts[0] = (CAGD_POINT) { .x = x_point, .y = y_point, .z = z_point };
 
 	}
+
+	/*
+	for (index = 0; index < numOfPoints; index++) {
+		e2t_setparamvalue(stepSize * index + domain_min, E2T_PARAM_T);
+		x_pt = e2t_evaltree(x_tree);
+		y_pt = e2t_evaltree(y_tree);
+		z_pt = e2t_evaltree(z_tree);
+
+		Tx_pt = e2t_evaltree(Tx_tree);
+		Ty_pt = e2t_evaltree(Ty_tree);
+		Tz_pt = e2t_evaltree(Tz_tree);
+
+		Nx_pt = e2t_evaltree(Nx_tree);
+		Ny_pt = e2t_evaltree(Ny_tree);
+		Nz_pt = e2t_evaltree(Nz_tree);
+
+		vector_size = sqrt(Tx_pt*Tx_pt + Ty_pt * Ty_pt + Tz_pt * Tz_pt);
+		Tx_pt = Tx_pt / vector_size;
+		Ty_pt = Ty_pt / vector_size;
+		Tz_pt = Tz_pt / vector_size;
+
+		kappa = sqrt(Nx_pt*Nx_pt + Ny_pt * Ny_pt + Nz_pt * Nz_pt);
+		Nx_pt = Nx_pt / kappa;
+		Ny_pt = Ny_pt / kappa;
+		Nz_pt = Nz_pt / kappa;
+
+		Bx_pt = Ty_pt * Nz_pt - Tz_pt * Ny_pt;
+		By_pt = Tz_pt * Nx_pt - Tx_pt * Nz_pt;
+		Bz_pt = Tx_pt * Ny_pt - Ty_pt * Nx_pt;
+
+		tmp_pt = (CAGD_POINT) { .x = x_pt, .y = y_pt, .z = z_pt };
+		my_pts[index] = tmp_pt;
+		id_pts[index] = cagdAddPoint(&tmp_pt);
+
+		tmp_pt = (CAGD_POINT) { .x = Tx_pt, .y = Ty_pt, .z = Tz_pt };
+		Tmy_pts[0] = my_pts[index];
+		Tmy_pts[1] = tmp_pt;
+
+		id_trihedron_T[index] = cagdAddPolyline(Tmy_pts, 2);
+
+		tmp_pt = (CAGD_POINT) { .x = Nx_pt, .y = Ny_pt, .z = Nz_pt };
+		Nmy_pts[0] = my_pts[index];
+		Nmy_pts[1] = tmp_pt;
+
+		id_trihedron_N[index] = cagdAddPolyline(Nmy_pts, 2);
+
+		tmp_pt = (CAGD_POINT) { .x = Bx_pt, .y = By_pt, .z = Bz_pt };
+		Bmy_pts[0] = my_pts[index];
+		Bmy_pts[1] = tmp_pt;
+
+		id_trihedron_B[index] = cagdAddPolyline(Bmy_pts, 2);
+
+	}
+	
+	*/
 
 	cagdAddPolyline(m_pts, sizeof(m_pts) / sizeof(CAGD_POINT));
 }
