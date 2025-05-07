@@ -11,6 +11,7 @@
 #define IDC_EDIT_MIN					1010
 #define IDC_EDIT_MAX					1011
 #define IDC_EDIT_SSIZE					1012
+#define IDC_EDIT_OFFSET					1013
 
 
 // Next default values for new objects
