@@ -3,11 +3,14 @@
 #include "resource.h"
 #include <expr2tree.h>
 
+
 #if defined(_WIN32)
     #if _MSC_VER >= 1900
 	#pragma comment(lib, "legacy_stdio_definitions.lib")
     #endif
 #endif
+
+#define SPHERE_POINT_NUM 40
 
 enum {
 	MY_CLICK = CAGD_USER,
@@ -33,14 +36,14 @@ enum {
 
 
 
-#define SHOW_FRENET_CURVE (1 << FRENET_CURVE - FRENET_CURVE)
-#define SHOW_FRENET_POINTS (1 << FRENET_POINTS- FRENET_CURVE))
-#define SHOW_FRENET_TRIHEDRON (1 << FRENET_TRIHEDRON- FRENET_CURVE))
-#define SHOW_FRENET_CURVATURE (1 << FRENET_CURVATURE- FRENET_CURVE))
-#define SHOW_FRENET_TORSION (1 << FRENET_TORSION- FRENET_CURVE))
-#define SHOW_FRENET_EVOLUTE (1 << FRENET_EVOLUTE- FRENET_CURVE))
-#define SHOW_FRENET_OFFSET (1 << FRENET_OFFSET- FRENET_CURVE))
-#define SHOW_FRENET_SPHERE (1 << FRENET_SPHERE- FRENET_CURVE))
+#define SHOW_FRENET_CURVE (1 << (FRENET_CURVE - FRENET_CURVE))
+#define SHOW_FRENET_POINTS (1 << (FRENET_POINTS- FRENET_CURVE))
+#define SHOW_FRENET_TRIHEDRON (1 << (FRENET_TRIHEDRON- FRENET_CURVE))
+#define SHOW_FRENET_CURVATURE (1 << (FRENET_CURVATURE- FRENET_CURVE))
+#define SHOW_FRENET_TORSION (1 << (FRENET_TORSION- FRENET_CURVE))
+#define SHOW_FRENET_EVOLUTE (1 << (FRENET_EVOLUTE- FRENET_CURVE))
+#define SHOW_FRENET_OFFSET (1 << (FRENET_OFFSET- FRENET_CURVE))
+#define SHOW_FRENET_SPHERE (1 << (FRENET_SPHERE- FRENET_CURVE))
 
 
 char *animText[] = {
@@ -88,13 +91,41 @@ FILE* fptr;
 double domain_min, domain_max;
 double offsetSize = 0.5;
 double stepSize = 0.1;
+double sleep_time = 1.0;
 int numOfPoints;
-UINT *id_pts, id_curve, *id_curvature, id_torsion, *id_trihedron_T, *id_trihedron_N, *id_trihedron_B, id_evolute, id_offset, *id_sphere;
+UINT *id_pts, id_curve, *id_curvature, *id_torsion, *id_trihedron_T, *id_trihedron_N, *id_trihedron_B, id_evolute, id_offset, *id_sphere, id_axis[3];
 int activePointIndex;
 char my_state_mask = 0;
 
-void my_display() {
+void hideAllPointwiseId() {
+	for (int index = 0; index < numOfPoints; index++) {
+		cagdHideSegment(id_curvature[index]);
+	}
+	for (int index = 0; index < numOfPoints; index++) {
+		cagdHideSegment(id_trihedron_T[index]);
+		cagdHideSegment(id_trihedron_N[index]);
+		cagdHideSegment(id_trihedron_B[index]);
+	}
+	for (int index = 0; index < numOfPoints; index++) {
+		cagdHideSegment(id_torsion[index]);
+	}
+	for (int index = 0; index < numOfPoints; index++) {
+		cagdHideSegment(id_sphere[index]);
+	}
+}
 
+void hideAllCurvewiseId() {
+	if ((my_state_mask & SHOW_FRENET_CURVE) == 0)
+		cagdHideSegment(id_curvature);
+	if ((my_state_mask & SHOW_FRENET_EVOLUTE) == 0)
+		cagdHideSegment(id_evolute);
+	if ((my_state_mask & SHOW_FRENET_OFFSET) == 0)
+		cagdHideSegment(id_offset);
+}
+
+void my_display() {
+	hideAllPointwiseId();
+	hideAllCurvewiseId();
 	cagdRedraw();
 }
 
@@ -122,6 +153,10 @@ void freeGlobals() {
 	if (id_sphere) {
 		free(id_sphere);
 		id_sphere = NULL;
+	}
+	if (id_torsion) {
+		free(id_torsion);
+		id_torsion = NULL;
 	}
 }
 
@@ -165,10 +200,12 @@ void myCreateCAGD() {
 	double* vector_size;
 	e2t_expr_node* Tx_tree, *Ty_tree, *Tz_tree;
 
+
 	CAGD_POINT* Nmy_pts;
 	CAGD_POINT* Evolute_pts, *Offset_pts;
 	double Nx_pt, Ny_pt, Nz_pt;
 	double* kappa;
+	double* kappa_prime;
 	e2t_expr_node* Nx_tree, *Ny_tree, *Nz_tree;
 
 	CAGD_POINT* Bmy_pts;
@@ -178,6 +215,7 @@ void myCreateCAGD() {
 	e2t_expr_node* Nprimex_tree, *Nprimey_tree, *Nprimez_tree;
 	double Nprimex_pt, Nprimey_pt, Nprimez_pt;
 	double scalar;
+	
 
 	numOfPoints = floor((domain_max - domain_min) / stepSize);
 	asserter = stepSize * numOfPoints + domain_min;
@@ -196,6 +234,7 @@ void myCreateCAGD() {
 
 	vector_size = (double*)malloc(sizeof(double) * (numOfPoints));
 	kappa = (double*)malloc(sizeof(double) * (numOfPoints));
+	kappa_prime = (double*)malloc(sizeof(double) * (numOfPoints));
 	tau = (double*)malloc(sizeof(double) * (numOfPoints));
 
 
@@ -204,6 +243,9 @@ void myCreateCAGD() {
 	id_trihedron_N = (UINT*)malloc(sizeof(UINT) * (numOfPoints));
 	id_trihedron_B = (UINT*)malloc(sizeof(UINT) * (numOfPoints));
 	id_curvature = (UINT*)malloc(sizeof(UINT) * (numOfPoints));
+	id_sphere = (UINT*)malloc(sizeof(UINT) * (numOfPoints));
+	id_torsion = (UINT*)malloc(sizeof(UINT) * (numOfPoints));
+
 
 	x_tree = buildTreeFromLine(x_line);
 	y_tree = buildTreeFromLine(y_line);
@@ -212,11 +254,23 @@ void myCreateCAGD() {
 	Tx_tree = e2t_derivtree(x_tree, E2T_PARAM_T);
 	Ty_tree = e2t_derivtree(y_tree, E2T_PARAM_T);
 	Tz_tree = e2t_derivtree(z_tree, E2T_PARAM_T);
-
+	char tmp[BUFSIZ];
+	e2t_printtree(Tx_tree, tmp);
+	printf("%s\n", tmp);
+	e2t_printtree(Ty_tree, tmp);
+	printf("%s\n", tmp);
+	e2t_printtree(Tz_tree, tmp);
+	printf("%s\n", tmp);
 	Nx_tree = e2t_derivtree(Tx_tree, E2T_PARAM_T);
 	Ny_tree = e2t_derivtree(Ty_tree, E2T_PARAM_T);
 	Nz_tree = e2t_derivtree(Tz_tree, E2T_PARAM_T);
-
+	char printtmp[BUFSIZ];
+	e2t_printtree(Nx_tree, tmp);
+	printf("%s\n", tmp);
+	e2t_printtree(Ny_tree, tmp);
+	printf("%s\n", tmp);
+	e2t_printtree(Nz_tree, tmp);
+	printf("%s\n", tmp);
 	Nprimex_tree = e2t_derivtree(Nx_tree, E2T_PARAM_T);
 	Nprimey_tree = e2t_derivtree(Ny_tree, E2T_PARAM_T);
 	Nprimez_tree = e2t_derivtree(Nz_tree, E2T_PARAM_T);
@@ -265,18 +319,14 @@ void myCreateCAGD() {
 		Ny_pt = e2t_evaltree(Ny_tree);
 		Nz_pt = e2t_evaltree(Nz_tree);
 
-		tmp_pt = (CAGD_POINT) { .x = Nx_pt, .y = Ny_pt, .z = Nz_pt };
-		Nmy_pts[index] = tmp_pt;
-
 		kappa[index] = sqrt(Nx_pt*Nx_pt + Ny_pt * Ny_pt + Nz_pt * Nz_pt);
 		Nx_pt = Nx_pt / kappa[index];
 		Ny_pt = Ny_pt / kappa[index];
 		Nz_pt = Nz_pt / kappa[index];
+		tmp_pt = (CAGD_POINT) { .x = Nx_pt, .y = Ny_pt, .z = Nz_pt };
+		Nmy_pts[index] = tmp_pt;
 
-		Evolute_pts[index].x = my_pts[index].x + (Nx_pt / kappa[index]);
-		Evolute_pts[index].y = my_pts[index].y + (Ny_pt / kappa[index]);
-		Evolute_pts[index].z = my_pts[index].z + (Nz_pt / kappa[index]);
-
+		
 		Offset_pts[index].x = my_pts[index].x + (Nx_pt*offsetSize );
 		Offset_pts[index].y = my_pts[index].y + (Ny_pt *offsetSize);
 		Offset_pts[index].z = my_pts[index].z + (Nz_pt * offsetSize);
@@ -291,19 +341,22 @@ void myCreateCAGD() {
 		 
 		id_trihedron_N[index] = cagdAddPolyline(poly_tmp_pts, 2);
 
-		float R = 1.0f / kappa[index];  // Radius of curvature
+		double R = 1.0f / kappa[index];  // Radius of curvature
 		CAGD_POINT center = {
 			.x = my_pts[index].x + R * Nx_pt,
 			.y = my_pts[index].y + R * Ny_pt,
 			.z = my_pts[index].z + R * Nz_pt
 		};
-		float stepDegree = 2 * 3.14159265358979323846 / 32;
+
+		Evolute_pts[index]= center; // the evolute is the curve of all the ceners of the osculating circles
+		
+		double stepDegree = 2 * 3.14159265358979323846 / 32;
 		CAGD_POINT circlePoints[32];
 	
 		for (int circlestep = 0; circlestep < 32; circlestep++) {
-			float theta = circlestep * stepDegree;
-			float cos_theta = cosf(theta);
-			float sin_theta = sinf(theta);
+			double theta = circlestep * stepDegree;
+			double cos_theta = cosf(theta);
+			double sin_theta = sinf(theta);
 
 			// Circle point in T-N plane
 			circlePoints[circlestep] = (CAGD_POINT) {
@@ -316,7 +369,7 @@ void myCreateCAGD() {
 		cagdSetColor(255, 255, 0);
 		
 		
-	//id_curvature[index] = cagdAddPolyline(circlePoints, 32);
+	id_curvature[index] = cagdAddPolyline(circlePoints, 32);
 	
 		cagdSetColor(0, 255, 0);
 	}
@@ -338,6 +391,8 @@ void myCreateCAGD() {
 		Nprimey_pt = e2t_evaltree(Nprimey_tree);
 		Nprimez_pt = e2t_evaltree(Nprimez_tree);
 		
+		kappa_prime[index] = (Nmy_pts[index].x * Nprimex_pt) + (Nmy_pts[index].y  * Nprimey_pt) + (Nmy_pts[index].z  *Nprimez_pt) / kappa[index];
+
 		scalar = Bx_pt * Nprimex_pt + By_pt * Nprimey_pt + Bz_pt * Nprimez_pt;
 
 		tau[index] = scalar / (Bsize*Bsize);
@@ -358,12 +413,6 @@ void myCreateCAGD() {
 
 		id_trihedron_B[index] = cagdAddPolyline(poly_tmp_pts, 2);
 
-		// helix
-		float R = 1.0f / kappa[index];  // Radius of curvature
-		
-		float stepDegree = 2 * 3.14159265358979323846 / 32;
-		CAGD_POINT helixPoints[32];
-
 		Tx_pt = Tmy_pts[index].x / vector_size[index];
 		Ty_pt = Tmy_pts[index].y / vector_size[index];
 		Tz_pt = Tmy_pts[index].z / vector_size[index];
@@ -372,22 +421,90 @@ void myCreateCAGD() {
 		Ny_pt = Nmy_pts[index].y / kappa[index];
 		Nz_pt = Nmy_pts[index].z / kappa[index];
 
-		printf("%lf \n", tau[index]);
 
+		
+		double stepDegree = 2 * 3.14159265358979323846 / 32;
+		CAGD_POINT helixPoints[32];
+
+		double helixR = 1.0f / tau[index]; 
+		double helixHeight = helixR; // height of helix is the same as it's radius
+		printf("|T| = %.4lf\t|N| = %.4lf\t|B| = %.4lf\n",
+			sqrt(Tx_pt*Tx_pt + Ty_pt * Ty_pt + Tz_pt * Tz_pt),
+			sqrt(Nx_pt*Nx_pt + Ny_pt * Ny_pt + Nz_pt * Nz_pt),
+			sqrt(Bx_pt*Bx_pt + By_pt * By_pt + Bz_pt * Bz_pt));
+
+		printf("T•N = %.4lf\tT•B = %.4lf\tN•B = %.4lf\n",
+			Tx_pt*Nx_pt + Ty_pt * Ny_pt + Tz_pt * Nz_pt,
+			Tx_pt*Bx_pt + Ty_pt * By_pt + Tz_pt * Bz_pt,
+			Nx_pt*Bx_pt + Ny_pt * By_pt + Nz_pt * Bz_pt);
+
+		// helix height
 		for (int helixstep = 0; helixstep < 32; helixstep++) {
-			float theta = helixstep * stepDegree;
-			float cos_theta = cosf(theta);
-			float sin_theta = sinf(theta);
+			double t = helixstep * stepDegree;
+			double cos_t = cosf(t);
+			double sin_t = sinf(t);
+			// helix with (0,0,0) as the starting point
+			//	x = R (cos(t) - 1)
+			//	y = R sin(t)
+			//  z = Ht
 			
+			// bruh im so bad at linear algebra
 			helixPoints[helixstep] = (CAGD_POINT) {
-				.x = my_pts[index].x + Tx_pt * (cos_theta - 1) + Nx_pt * sin_theta + Bx_pt * theta,
-					.y = my_pts[index].y + Ty_pt * (cos_theta - 1) + Ny_pt * sin_theta + By_pt * theta,
-					.z = my_pts[index].z + Tz_pt * (cos_theta - 1) + Nz_pt * sin_theta + Bz_pt * theta,
+				.x = my_pts[index].x
+					+ Tx_pt * helixR * (cos_t - 1)
+					+ Nx_pt * helixR * sin_t
+					+ Bx_pt * helixHeight * t,
+
+					.y = my_pts[index].y
+					+ Ty_pt * helixR * (cos_t - 1)
+					+ Ny_pt * helixR * sin_t
+					+ By_pt * helixHeight * t,
+
+					.z = my_pts[index].z
+					+ Tz_pt * helixR * (cos_t - 1)
+					+ Nz_pt * helixR * sin_t
+					+ Bz_pt * helixHeight * t,
 			};
+
 		}
+		
+		cagdSetColor(255, 200, 230);
+
+		CAGD_POINT sphereCenter =
+		{ .x = my_pts[index].x + Nx_pt / kappa[index] - (Bx_pt * kappa_prime[index]) / (kappa[index] * kappa[index] * tau[index]),
+		.y = my_pts[index].y + (Ny_pt / kappa[index]) - (kappa_prime[index] / (kappa[index] * kappa[index] * tau[index])) * By_pt,
+		.z = my_pts[index].z + (Nz_pt / kappa[index]) - (kappa_prime[index] / (kappa[index] * kappa[index] * tau[index])) * Bz_pt };
+
+		double sphereR = sqrt((1 / kappa[index])*(1 / kappa[index]) +
+			(kappa_prime[index] / (kappa[index] * kappa[index] * tau[index]))*(kappa_prime[index] / (kappa[index] * kappa[index] * tau[index])));
+
+		CAGD_POINT sphereSpiralPoints[SPHERE_POINT_NUM * SPHERE_POINT_NUM];
+		int i = 0;
+		stepDegree = 2 * 3.14159265358979323846f / SPHERE_POINT_NUM;
+		for (int spherestep_theta = 0; spherestep_theta < SPHERE_POINT_NUM; spherestep_theta++) {
+			double theta = spherestep_theta * stepDegree;
+			double cos_theta = cosf(theta);
+			double sin_theta = sinf(theta);
+			for (int spherestep_phi = 0; spherestep_phi < SPHERE_POINT_NUM; spherestep_phi++) {
+				double phi = spherestep_phi * stepDegree;
+				double cos_phi = cosf(phi);
+				double sin_phi = sinf(phi);
+
+				CAGD_POINT tmp = { .x =sphereCenter.x + sphereR * sin_theta * cos_phi,
+									.y = sphereCenter.y + sphereR * sin_theta * sin_phi,
+									.z = sphereCenter.z + sphereR * cos_theta,
+				};
+
+				sphereSpiralPoints[i] = tmp;
+				i++;
+			}
+			
+		}
+		id_sphere[index] = cagdAddPolyline(sphereSpiralPoints, SPHERE_POINT_NUM*SPHERE_POINT_NUM);
+		//printf("%d\n", id_sphere[index]);
 		cagdSetColor(255, 150, 0);
 		
-		cagdAddPolyline(helixPoints, 32);
+		id_torsion[index] = cagdAddPolyline(helixPoints, 32);
 		cagdSetColor(0, 0, 255);
 
 	}
@@ -405,6 +522,10 @@ void myCreateCAGD() {
 	free(Bmy_pts);
 	free(Evolute_pts);
 	free(Offset_pts);
+	free(vector_size);
+	free(kappa);
+	free(kappa_prime);
+	free(tau);
 
 	e2t_freetree(x_tree);
 	e2t_freetree(y_tree);
@@ -420,7 +541,6 @@ void myCreateCAGD() {
 	e2t_freetree(Nprimez_tree);
 
 }
-
 
 LRESULT CALLBACK myDialogProc(HWND hDialog, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -441,7 +561,7 @@ LRESULT CALLBACK myDialogProc(HWND hDialog, UINT message, WPARAM wParam, LPARAM 
 
 INT_PTR CALLBACK myDialogProc2(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char x_buff[BUFSIZ], y_buff[BUFSIZ], z_buff[BUFSIZ], min_buff[32], max_buff[32], ssize_buff[32], offset_buff[32];
+	char x_buff[BUFSIZ], y_buff[BUFSIZ], z_buff[BUFSIZ], min_buff[32], max_buff[32], ssize_buff[32], offset_buff[32], sleep_buff[32];
 	//char scan_x_buff[BUFSIZ], scan_y_buff[BUFSIZ], scan_z_buff[BUFSIZ], scan_min_buff[32], scan_max_buff[32], scan_ssize_buff[32];
 	switch (msg) {
 
@@ -461,13 +581,12 @@ INT_PTR CALLBACK myDialogProc2(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 		SetDlgItemText(hwnd, IDC_EDIT_SSIZE, ssize_buff);
 		sprintf(offset_buff, " %lf ", offsetSize);
 		SetDlgItemText(hwnd, IDC_EDIT_OFFSET, offset_buff);
+		sprintf(sleep_buff, " %lf ", sleep_time);
+		SetDlgItemText(hwnd, IDC_EDIT_OFFSET, sleep_buff);
 		break;
 	case WM_COMMAND:
 		// If OK button is pressed (IDOK)
 		if (LOWORD(wParam) == IDOK) {
-			// Declare variables for values
-			double stepSizeTmp;
-			double domain_minTmp, domain_maxTmp;
 
 			// Retrieve text input from the three edit controls (Red, Green, Blue)
 			GetDlgItemText(hwnd, IDC_EDIT_X, x_buff, sizeof(x_buff)); 
@@ -477,6 +596,8 @@ INT_PTR CALLBACK myDialogProc2(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			GetDlgItemText(hwnd, IDC_EDIT_MAX, max_buff, sizeof(max_buff));
 			GetDlgItemText(hwnd, IDC_EDIT_SSIZE, ssize_buff, sizeof(ssize_buff));
 			GetDlgItemText(hwnd, IDC_EDIT_OFFSET, offset_buff, sizeof(offset_buff));
+			GetDlgItemText(hwnd, IDC_EDIT_OFFSET, sleep_buff, sizeof(sleep_buff));
+
 
 			strncpy(x_line, x_buff, BUFSIZ);
 			strncpy(y_line, y_buff, BUFSIZ);
@@ -486,6 +607,8 @@ INT_PTR CALLBACK myDialogProc2(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			sscanf(max_buff, "%lf", &domain_max);
 			sscanf(ssize_buff, "%lf", &stepSize);
 			sscanf(offset_buff, "%lf", &offsetSize);
+			sscanf(sleep_buff, "%lf", &sleep_time);
+
 
 			EndDialog(hwnd, IDOK);
 			myCreateCAGD();
@@ -606,12 +729,68 @@ void myPolyLeftDown(int x, int y, PVOID userData)
 }
 
 void display_point(int ptIndex) {
+	// check flags and display
 	printf("found this index %d\n", ptIndex);
+	// depends on the flags, display the thing.
+	if(my_state_mask & SHOW_FRENET_CURVATURE){
+		cagdShowSegment(id_curvature[ptIndex]);
+	}
+	else {
+		cagdHideSegment(id_curvature[ptIndex]);
+	}
+	if (my_state_mask & SHOW_FRENET_TRIHEDRON) {
+		cagdShowSegment(id_trihedron_T[ptIndex]);
+		cagdShowSegment(id_trihedron_N[ptIndex]);
+		cagdShowSegment(id_trihedron_B[ptIndex]);
+
+	}
+	else {
+		cagdHideSegment(id_trihedron_T[ptIndex]);
+		cagdHideSegment(id_trihedron_N[ptIndex]);
+		cagdHideSegment(id_trihedron_B[ptIndex]);
+
+	}
+	if (my_state_mask & SHOW_FRENET_TORSION) {
+		cagdShowSegment(id_torsion[ptIndex]);
+	}
+	else {
+		cagdHideSegment(id_torsion[ptIndex]);
+	}
+	if (my_state_mask & SHOW_FRENET_SPHERE) {
+		cagdShowSegment(id_sphere[ptIndex]);
+	}
+	else {
+		cagdHideSegment(id_sphere[ptIndex]);
+	}
+}
+
+void hide_point(int ptIndex) {
+	if (ptIndex >= 0) {
+		cagdHideSegment(id_curvature[ptIndex]);
+
+		cagdHideSegment(id_trihedron_T[ptIndex]);
+		cagdHideSegment(id_trihedron_N[ptIndex]);
+		cagdHideSegment(id_trihedron_B[ptIndex]);
+
+		cagdHideSegment(id_torsion[ptIndex]);
+
+		cagdHideSegment(id_sphere[ptIndex]);
+	}
+}
+
+void animate() {
+	
+		hide_point((activePointIndex) % numOfPoints);
+		display_point((activePointIndex+1) % numOfPoints);
+		activePointIndex  = (activePointIndex + 1) % numOfPoints;
+		
+		cagdRedraw();
 }
 
 void myPointInteract(int x, int y, PVOID userData) {
 	UINT id;
 	int index = 0;
+	boolean point_found = FALSE;
 	cagdPick(x, y);
 
 	while (id = cagdPickNext()) {
@@ -625,37 +804,43 @@ void myPointInteract(int x, int y, PVOID userData) {
 		}
 		if (index != numOfPoints) {
 			display_point(index);
+			point_found = TRUE;
 		}
 	}
-	activePointIndex = index;
+	hide_point(activePointIndex);
+
+	if (point_found) {
+		activePointIndex = index;
+	}
+	else {
+		activePointIndex = -1;
+	}
+	cagdRedraw();
 }
 
 void myFrenet(int id, int unUsed, PVOID userData) {
-
 	HMENU fMenu = (HMENU)userData;
 	UINT state = GetMenuState(fMenu, id, MF_BYCOMMAND);
 	UINT newState = state;
 	if (id != M_PROPERTIES) {
 		 newState = (state & MF_CHECKED) ? MF_UNCHECKED : MF_CHECKED;
 	}
-	int red, green, blue;
-
+	cagdRegisterCallback(CAGD_LBUTTONDOWN, myPointInteract, NULL);
 
 	CheckMenuItem(fMenu, id, MF_BYCOMMAND | newState);
-
 	switch (id){
 	case FRENET_CURVE:
 		if (newState == MF_CHECKED) {
 			if (!cagdShowSegment(id_curve)) {
 				printf("ERROR: can't show curve!\n");
 			}
-			
+			my_state_mask |= SHOW_FRENET_CURVE;
 		}
 		else {
 			if (!cagdHideSegment(id_curve)) {
 				printf("ERROR: can't hide curve!\n");
 			}
-			
+			my_state_mask &= ~SHOW_FRENET_CURVE;
 		}
 		break;
 	case FRENET_POINTS:
@@ -667,6 +852,7 @@ void myFrenet(int id, int unUsed, PVOID userData) {
 						printf("ERROR: can't show point!\n");
 					}
 				}
+				my_state_mask |= SHOW_FRENET_POINTS;
 			}
 			else {
 				for (int pointIndex = 0; pointIndex < numOfPoints; pointIndex++) {
@@ -674,6 +860,7 @@ void myFrenet(int id, int unUsed, PVOID userData) {
 						printf("ERROR: can't hide point!\n");
 					}
 				}
+				my_state_mask &= SHOW_FRENET_POINTS;
 
 			}
 		}
@@ -683,64 +870,139 @@ void myFrenet(int id, int unUsed, PVOID userData) {
 		if (id_trihedron_T && id_trihedron_B && id_trihedron_N) {
 			if (newState == MF_CHECKED) {
 
-				for (int pointIndex = 0; pointIndex < numOfPoints; pointIndex++) {
-					if (!cagdShowSegment(id_trihedron_T[pointIndex])) {
-						printf("ERROR: can't show T!\n");
-					}
-					if (!cagdShowSegment(id_trihedron_N[pointIndex])) {
-						printf("ERROR: can't show N!\n");
-					}
-					if (!cagdShowSegment(id_trihedron_B[pointIndex])) {
-						printf("ERROR: can't show B!\n");
-					}
-				}
+				my_state_mask |= SHOW_FRENET_TRIHEDRON;
 			}
 			else {
-				for (int pointIndex = 0; pointIndex < numOfPoints; pointIndex++) {
-					if (!cagdHideSegment(id_trihedron_T[pointIndex])) {
-						printf("ERROR: can't hide T!\n");
-					}
-					if (!cagdHideSegment(id_trihedron_N[pointIndex])) {
-						printf("ERROR: can't hide N!\n");
-					}
-					if (!cagdHideSegment(id_trihedron_B[pointIndex])) {
-						printf("ERROR: can't hide B!\n");
-					}
-				}
-
+				my_state_mask &= ~SHOW_FRENET_TRIHEDRON;
 			}
 		}
 		
 		break;
 	case FRENET_CURVATURE:
+		if (id_curvature) {
+			if (newState == MF_CHECKED) {
+
+				my_state_mask |= SHOW_FRENET_CURVATURE;
+			}
+			else {
+				my_state_mask &= SHOW_FRENET_CURVATURE;
+
+			}
+		}
 		break;
 	case FRENET_TORSION:
+		if (id_torsion) {
+			if (newState == MF_CHECKED) {
+				
+				my_state_mask |= SHOW_FRENET_TORSION;
+			}
+			else {
+				
+				my_state_mask &= SHOW_FRENET_TORSION;
+			}
+		}
 		break;
 	case FRENET_EVOLUTE:
+		if (newState == MF_CHECKED) {
+			if (!cagdShowSegment(id_evolute)) {
+				printf("ERROR: can't show evolute!\n");
+			}
+			my_state_mask |= SHOW_FRENET_EVOLUTE;
+		}
+		else {
+			if (!cagdHideSegment(id_evolute)) {
+				printf("ERROR: can't hide evolute!\n");
+			}
+			my_state_mask &= ~SHOW_FRENET_EVOLUTE;
+		}
 		break;
 	case FRENET_OFFSET:
+		if (newState == MF_CHECKED) {
+			if (!cagdShowSegment(id_offset)) {
+				printf("ERROR: can't show offset!\n");
+			}
+			my_state_mask |= SHOW_FRENET_OFFSET;
+		}
+		else {
+			if (!cagdHideSegment(id_offset)) {
+				printf("ERROR: can't hide offset!\n");
+			}
+			my_state_mask &= ~SHOW_FRENET_OFFSET;
+		}
 		break;
 	case FRENET_SPHERE:
+		if (id_torsion) {
+			if (newState == MF_CHECKED) {
+				
+				my_state_mask |= SHOW_FRENET_SPHERE;
+			}
+			else {
+				
+				my_state_mask &= SHOW_FRENET_SPHERE;
+			}
+		}
 		break;
 	case FRENET_AXIS:
+		if (id_axis[0] && id_axis[1] && id_axis[2]) {
+			if (newState == MF_CHECKED) {
+				if (!cagdShowSegment(id_axis[0])) {
+					printf("ERROR: can't show X!\n");
+				}
+
+				if (!cagdShowSegment(id_axis[1])) {
+					printf("ERROR: can't show Y!\n");
+				}
+
+				if (!cagdShowSegment(id_axis[2])) {
+					printf("ERROR: can't show Z!\n");
+				}
+
+			}
+			else {
+				if (!cagdHideSegment(id_axis[0])) {
+					printf("ERROR: can't hide X!\n");
+				}
+
+				if (!cagdHideSegment(id_axis[1])) {
+					printf("ERROR: can't hide Y!\n");
+				}
+
+				if (!cagdHideSegment(id_axis[2])) {
+					printf("ERROR: can't hide Z!\n");
+				}
+			}
+
+		}
 		break;
 	case FRENET_ANIMATION:
-		break;
-	}
+		hide_point(activePointIndex);
+		activePointIndex = 0;
+		if (newState == MF_CHECKED) {
+			cagdRegisterCallback(CAGD_TIMER, animate, NULL);
+			cagdRegisterCallback(CAGD_LBUTTONDOWN, NULL, NULL);
 
-	if (id == M_PROPERTIES) {
-		if (DialogBox(cagdGetModule(),
-			MAKEINTRESOURCE(IDD_EDIT_PARAMS),
-			cagdGetWindow(),
-			(DLGPROC)myDialogProc2))
-			printf("yeah\n");
+		}
+		else {
+			cagdRegisterCallback(CAGD_TIMER, NULL, NULL);
+			cagdRegisterCallback(CAGD_LBUTTONDOWN, myPointInteract, NULL);
+
+
+		}
+		break;
+	case M_PROPERTIES:
+		if (id == M_PROPERTIES) {
+			if (DialogBox(cagdGetModule(),
+				MAKEINTRESOURCE(IDD_EDIT_PARAMS),
+				cagdGetWindow(),
+				(DLGPROC)myDialogProc2))
+				printf("yeah\n");
 			/*if (sscanf(bufferR, "%d", &red) == 1 && sscanf(bufferG, "%d", &green) == 1 && sscanf(bufferB, "%d", &blue) == 1) {
 				cagdSetSegmentColor(id, (BYTE)red, (BYTE)green, (BYTE)blue);
 				printf("Colors chosen (rgb) : (%d, %d, %d)", red, green, blue);
 			}
 			else
 				myMessage("Change color", "Bad color!", MB_ICONERROR);*/
-		
+		}
 			
 	}
 
@@ -881,6 +1143,25 @@ void myCommand(int id, int unUsed, PVOID userData)
 	cagdRedraw();
 }
 
+void createOriginAxis() {
+	CAGD_POINT origin = { .x = 0,.y = 0,.z = 0 };
+	CAGD_POINT v_d = { .x = 1,.y = 0,.z = 0 };
+	CAGD_POINT tmp[] = { origin, v_d };
+	cagdSetColor(255, 0, 0);
+	id_axis[0] = cagdAddPolyline(tmp, 2);
+	tmp[1] = (CAGD_POINT) { .x = 0, .y = 1, .z = 0 };
+	cagdSetColor(0, 255, 0);
+	id_axis[1] = cagdAddPolyline(tmp, 2);
+	tmp[1] = (CAGD_POINT) { .x = 0, .y = 0, .z = 1 };
+	cagdSetColor(0, 0, 255);
+	id_axis[2] = cagdAddPolyline(tmp, 2);
+	cagdSetColor(255, 255, 255);
+	cagdHideSegment(id_axis[0]);
+	cagdHideSegment(id_axis[1]);
+	cagdHideSegment(id_axis[2]);
+
+}
+
 int main(int argc, char *argv[])
 {
 	HMENU hMenu;
@@ -907,14 +1188,16 @@ int main(int argc, char *argv[])
 
 	cagdRegisterCallback(CAGD_LOADFILE, myRead, NULL);
 	cagdRegisterCallback(CAGD_SAVEFILE, mySave, NULL);
-
-	//cagdAppendMenu(myPopup, "New");
-
+	createOriginAxis();
 
 	// Frenet menu
 	HMENU fMenu = CreatePopupMenu();
 	AppendMenu(fMenu, MF_STRING | MF_CHECKED, FRENET_CURVE, "Curve");
+	my_state_mask = my_state_mask | SHOW_FRENET_CURVE;
+
 	AppendMenu(fMenu, MF_STRING | MF_CHECKED, FRENET_POINTS, "Points");
+	my_state_mask = my_state_mask | SHOW_FRENET_POINTS;
+
 	AppendMenu(fMenu, MF_SEPARATOR, 0, NULL);
 	AppendMenu(fMenu, MF_STRING , FRENET_TRIHEDRON, "Trihedron");
 	AppendMenu(fMenu, MF_STRING , FRENET_CURVATURE, "Curvature (Osculating Circle)");

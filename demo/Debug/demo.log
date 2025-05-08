@@ -1,13 +1,15 @@
 ﻿  demo.c
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(182): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(294): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(300): warning C4305: 'initializing': truncation from 'double' to 'float'
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(362): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(364): warning C4305: 'initializing': truncation from 'double' to 'float'
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(470): warning C4101: 'domain_minTmp': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(470): warning C4101: 'domain_maxTmp': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(469): warning C4101: 'stepSizeTmp': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(641): warning C4101: 'red': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(641): warning C4101: 'blue': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(641): warning C4101: 'green': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(119): warning C4047: 'function': 'UINT' differs in levels of indirection from 'UINT *'
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(119): warning C4024: 'cagdHideSegment': different types for formal and actual parameter 1
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(220): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(358): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(359): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(444): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(445): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(486): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(487): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(490): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(491): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(267): warning C4101: 'printtmp': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(981): warning C4113: 'void (__cdecl *)()' differs in parameter lists from 'CAGD_CALLBACK'
   demo.vcxproj -> C:\Users\DVASH\OneDrive - Technion\Spring25\CAGD\CAGD\demo\.\Debug\demo.exe

@@ -1,4 +1,6 @@
 ﻿  segment.c
+  expr2tree.c
+c:\users\dvash\onedrive - technion\spring25\cagd\lab1\expr2tree\expr2tree.c(438): warning C4018: '>=': signed/unsigned mismatch
   cagd.c
   callback.c
   Generating Code...
