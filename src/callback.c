@@ -8,6 +8,8 @@
 #define LOINT(x) ((int)(short)LOWORD(x))
 #define HIINT(x) ((int)(short)HIWORD(x))
 
+int GLOBAL_ANIMATE_TIMER_MS = 1;
+
 typedef struct {
   CAGD_CALLBACK callback;
   PVOID data;
@@ -55,7 +57,7 @@ BOOL cagdRegisterCallback(UINT message, CAGD_CALLBACK function, PVOID data)
     list[message].data = data;
     if(message == CAGD_TIMER)
       if(function)
-	SetTimer(auxGetHWND(), 0, 1, NULL);
+	SetTimer(auxGetHWND(), 0, GLOBAL_ANIMATE_TIMER_MS, NULL);
       else
 	KillTimer(auxGetHWND(), 0);
     return TRUE;
