@@ -153,7 +153,7 @@ void my_display() {
 	cagdRedraw();
 }
 
-void freeGlobals() {
+void resetGlobals() {
 	if (id_pts) {
 		free(id_pts);
 		id_pts = NULL;
@@ -182,6 +182,7 @@ void freeGlobals() {
 		free(id_torsion);
 		id_torsion = NULL;
 	}
+	activePointIndex = -1;
 }
 
 void myMessage(PSTR title, PSTR message, UINT type)
@@ -225,7 +226,7 @@ void myCreateCAGD() {
 	if (domain_max < asserter) {
 		printf("too many points \n");
 	}
-	freeGlobals();
+	resetGlobals();
 
 	// allocate after freeing
 	my_pts = (CAGD_POINT *)malloc(sizeof(CAGD_POINT) * (numOfPoints));
@@ -655,35 +656,37 @@ void display_point(int ptIndex) {
 	// check flags and display
 	printf("found this index %d\n", ptIndex);
 	// depends on the flags, display the thing.
-	if(my_state_mask & SHOW_FRENET_CURVATURE){
-		cagdShowSegment(id_curvature[ptIndex]);
-	}
-	else {
-		cagdHideSegment(id_curvature[ptIndex]);
-	}
-	if (my_state_mask & SHOW_FRENET_TRIHEDRON) {
-		cagdShowSegment(id_trihedron_T[ptIndex]);
-		cagdShowSegment(id_trihedron_N[ptIndex]);
-		cagdShowSegment(id_trihedron_B[ptIndex]);
+	if (ptIndex >= 0 && ptIndex < numOfPoints) {
+		if (my_state_mask & SHOW_FRENET_CURVATURE) {
+			cagdShowSegment(id_curvature[ptIndex]);
+		}
+		else {
+			cagdHideSegment(id_curvature[ptIndex]);
+		}
+		if (my_state_mask & SHOW_FRENET_TRIHEDRON) {
+			cagdShowSegment(id_trihedron_T[ptIndex]);
+			cagdShowSegment(id_trihedron_N[ptIndex]);
+			cagdShowSegment(id_trihedron_B[ptIndex]);
 
-	}
-	else {
-		cagdHideSegment(id_trihedron_T[ptIndex]);
-		cagdHideSegment(id_trihedron_N[ptIndex]);
-		cagdHideSegment(id_trihedron_B[ptIndex]);
+		}
+		else {
+			cagdHideSegment(id_trihedron_T[ptIndex]);
+			cagdHideSegment(id_trihedron_N[ptIndex]);
+			cagdHideSegment(id_trihedron_B[ptIndex]);
 
-	}
-	if (my_state_mask & SHOW_FRENET_TORSION) {
-		cagdShowSegment(id_torsion[ptIndex]);
-	}
-	else {
-		cagdHideSegment(id_torsion[ptIndex]);
-	}
-	if (my_state_mask & SHOW_FRENET_SPHERE) {
-		cagdShowSegment(id_sphere[ptIndex]);
-	}
-	else {
-		cagdHideSegment(id_sphere[ptIndex]);
+		}
+		if (my_state_mask & SHOW_FRENET_TORSION) {
+			cagdShowSegment(id_torsion[ptIndex]);
+		}
+		else {
+			cagdHideSegment(id_torsion[ptIndex]);
+		}
+		if (my_state_mask & SHOW_FRENET_SPHERE) {
+			cagdShowSegment(id_sphere[ptIndex]);
+		}
+		else {
+			cagdHideSegment(id_sphere[ptIndex]);
+		}
 	}
 }
 
@@ -792,7 +795,9 @@ void myFrenet(int id, int unUsed, PVOID userData) {
 	case FRENET_TRIHEDRON:
 		if (id_trihedron_T && id_trihedron_B && id_trihedron_N) {
 			if (newState == MF_CHECKED) {
-
+				if (!cagdShowSegment(id_trihedron_T[activePointIndex])) {
+					printf("ERROR: can't show curve!\n");
+				}
 				my_state_mask |= SHOW_FRENET_TRIHEDRON;
 			}
 			else {
@@ -928,7 +933,7 @@ void myFrenet(int id, int unUsed, PVOID userData) {
 		}
 			
 	}
-
+	display_point(activePointIndex);
 	cagdRedraw();
 }
 
