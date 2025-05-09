@@ -1,16 +1,16 @@
 ﻿  demo.c
 c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(122): warning C4047: 'function': 'UINT' differs in levels of indirection from 'UINT *'
 c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(122): warning C4024: 'cagdHideSegment': different types for formal and actual parameter 1
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(224): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(370): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(371): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(395): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(396): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(419): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(420): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(423): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(424): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(904): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(905): warning C4113: 'void (__cdecl *)()' differs in parameter lists from 'CAGD_CALLBACK'
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(910): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(243): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(389): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(390): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(414): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(415): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(438): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(439): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(442): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(443): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(923): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(924): warning C4113: 'void (__cdecl *)()' differs in parameter lists from 'CAGD_CALLBACK'
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(929): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
   demo.vcxproj -> C:\Users\DVASH\OneDrive - Technion\Spring25\CAGD\CAGD\demo\.\Debug\demo.exe

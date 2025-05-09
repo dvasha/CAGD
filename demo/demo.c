@@ -132,8 +132,8 @@ void colorSegments() {
 	cagdSetSegmentColor(id_offset, 100, 100, 100);// offset is grey
 	cagdSetSegmentColor(id_evolute, 255, 174, 201); // evolute is light pink
 	cagdSetSegmentColor(id_axis[0], 255, 0, 0); // x is red
-	cagdSetSegmentColor(id_axis[1], 0, 255, 0); // x is red
-	cagdSetSegmentColor(id_axis[2], 0, 0, 255); // x is red
+	cagdSetSegmentColor(id_axis[1], 0, 255, 0); // y is green
+	cagdSetSegmentColor(id_axis[2], 0, 0, 255); // z is blue
 	for (int i = 0; i < numOfPoints; i++) {
 		cagdSetSegmentColor(id_pts[i], 255, 255, 255); //points are white
 		cagdSetSegmentColor(id_curvature[i], 255, 108, 156); // osculating circle is medium pink
@@ -206,10 +206,29 @@ e2t_expr_node* buildTreeFromLine(char* line) {
 	return newTree;
 
 }
+void createOriginAxis() {
+	CAGD_POINT origin = { .x = 0,.y = 0,.z = 0 };
+	CAGD_POINT v_d = { .x = 1,.y = 0,.z = 0 };
+	CAGD_POINT tmp[] = { origin, v_d };
+	cagdSetColor(255, 0, 0);
+	id_axis[0] = cagdAddPolyline(tmp, 2);
+	tmp[1] = (CAGD_POINT) { .x = 0, .y = 1, .z = 0 };
+	cagdSetColor(0, 255, 0);
+	id_axis[1] = cagdAddPolyline(tmp, 2);
+	tmp[1] = (CAGD_POINT) { .x = 0, .y = 0, .z = 1 };
+	cagdSetColor(0, 0, 255);
+	id_axis[2] = cagdAddPolyline(tmp, 2);
+	cagdSetColor(255, 255, 255);
+	cagdHideSegment(id_axis[0]);
+	cagdHideSegment(id_axis[1]);
+	cagdHideSegment(id_axis[2]);
+
+}
 
 void myCreateCAGD() {
 	cagdFreeAllSegments();
 	cagdReset();
+	createOriginAxis();
 	CAGD_POINT poly_tmp_pts[2];
 	double asserter;
 	double scale = 0.2;
@@ -1060,24 +1079,6 @@ void myCommand(int id, int unUsed, PVOID userData)
 	cagdRedraw();
 }
 
-void createOriginAxis() {
-	CAGD_POINT origin = { .x = 0,.y = 0,.z = 0 };
-	CAGD_POINT v_d = { .x = 1,.y = 0,.z = 0 };
-	CAGD_POINT tmp[] = { origin, v_d };
-	cagdSetColor(255, 0, 0);
-	id_axis[0] = cagdAddPolyline(tmp, 2);
-	tmp[1] = (CAGD_POINT) { .x = 0, .y = 1, .z = 0 };
-	cagdSetColor(0, 255, 0);
-	id_axis[1] = cagdAddPolyline(tmp, 2);
-	tmp[1] = (CAGD_POINT) { .x = 0, .y = 0, .z = 1 };
-	cagdSetColor(0, 0, 255);
-	id_axis[2] = cagdAddPolyline(tmp, 2);
-	cagdSetColor(255, 255, 255);
-	cagdHideSegment(id_axis[0]);
-	cagdHideSegment(id_axis[1]);
-	cagdHideSegment(id_axis[2]);
-
-}
 
 int main(int argc, char *argv[])
 {
