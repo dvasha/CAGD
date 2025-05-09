@@ -390,11 +390,6 @@ void myCreateCAGD() {
 		double theta_step_size = 2 * 3.14159265358979323846 / HELIX_POINT_NUM;
 		CAGD_POINT helixPoints[HELIX_POINT_NUM];
 
-		printf("T•N = %.4lf\tT•B = %.4lf\tN•B = %.4lf\n",
-			Tmy_pts[index].x*Nmy_pts[index].x + Tmy_pts[index].y * Nmy_pts[index].y + Tmy_pts[index].z * Nmy_pts[index].z,
-			Tmy_pts[index].x*Bmy_pts[index].x + Tmy_pts[index].y * Bmy_pts[index].y + Tmy_pts[index].z * Bmy_pts[index].z,
-			Nmy_pts[index].x*Bmy_pts[index].x + Nmy_pts[index].y * Bmy_pts[index].y + Nmy_pts[index].z * Bmy_pts[index].z);
-
 		for (int helixstep = 0; helixstep < HELIX_POINT_NUM; helixstep++) {
 			double theta = helixstep * theta_step_size;
 			double cos_theta = cosf(theta);
@@ -654,7 +649,7 @@ void myPolyLeftDown(int x, int y, PVOID userData)
 
 void display_point(int ptIndex) {
 	// check flags and display
-	printf("found this index %d\n", ptIndex);
+	//printf("found this index %d\n", ptIndex);
 	// depends on the flags, display the thing.
 	if (ptIndex >= 0 && ptIndex < numOfPoints) {
 		if (my_state_mask & SHOW_FRENET_CURVATURE) {
@@ -786,7 +781,7 @@ void myFrenet(int id, int unUsed, PVOID userData) {
 						printf("ERROR: can't hide point!\n");
 					}
 				}
-				my_state_mask &= SHOW_FRENET_POINTS;
+				my_state_mask &= ~SHOW_FRENET_POINTS;
 
 			}
 		}
@@ -813,7 +808,7 @@ void myFrenet(int id, int unUsed, PVOID userData) {
 				my_state_mask |= SHOW_FRENET_CURVATURE;
 			}
 			else {
-				my_state_mask &= SHOW_FRENET_CURVATURE;
+				my_state_mask &= ~SHOW_FRENET_CURVATURE;
 
 			}
 		}
@@ -826,7 +821,7 @@ void myFrenet(int id, int unUsed, PVOID userData) {
 			}
 			else {
 				
-				my_state_mask &= SHOW_FRENET_TORSION;
+				my_state_mask &= ~SHOW_FRENET_TORSION;
 			}
 		}
 		break;
@@ -866,7 +861,7 @@ void myFrenet(int id, int unUsed, PVOID userData) {
 			}
 			else {
 				
-				my_state_mask &= SHOW_FRENET_SPHERE;
+				my_state_mask &= ~SHOW_FRENET_SPHERE;
 			}
 		}
 		break;
@@ -924,12 +919,6 @@ void myFrenet(int id, int unUsed, PVOID userData) {
 				cagdGetWindow(),
 				(DLGPROC)myDialogProc2))
 				printf("yeah\n");
-			/*if (sscanf(bufferR, "%d", &red) == 1 && sscanf(bufferG, "%d", &green) == 1 && sscanf(bufferB, "%d", &blue) == 1) {
-				cagdSetSegmentColor(id, (BYTE)red, (BYTE)green, (BYTE)blue);
-				printf("Colors chosen (rgb) : (%d, %d, %d)", red, green, blue);
-			}
-			else
-				myMessage("Change color", "Bad color!", MB_ICONERROR);*/
 		}
 			
 	}

@@ -4,14 +4,13 @@ c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(122): warning 
 c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(224): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
 c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(370): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
 c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(371): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(400): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(401): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(395): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(396): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(419): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(420): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(423): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
 c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(424): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(425): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(428): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(429): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(909): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(910): warning C4113: 'void (__cdecl *)()' differs in parameter lists from 'CAGD_CALLBACK'
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(915): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-demo.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(904): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(905): warning C4113: 'void (__cdecl *)()' differs in parameter lists from 'CAGD_CALLBACK'
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\demo\demo.c(910): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
   demo.vcxproj -> C:\Users\DVASH\OneDrive - Technion\Spring25\CAGD\CAGD\demo\.\Debug\demo.exe
