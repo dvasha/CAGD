@@ -10,7 +10,7 @@
     #endif
 #endif
 
-#define SPHERE_POINT_NUM 40
+#define SPHERE_POINT_NUM 128
 #define CIRCLLE_POINT_NUM 32
 #define HELIX_POINT_NUM 64
 
@@ -442,9 +442,18 @@ void myCreateCAGD() {
 				double cos_phi = cosf(phi);
 				double sin_phi = sinf(phi);
 
-				CAGD_POINT tmp = { .x = sphereCenter.x + sphereR * sin_theta * cos_phi,
+				/*CAGD_POINT tmp = { .x = sphereCenter.x + sphereR * sin_theta * cos_phi,
 									.y = sphereCenter.y + sphereR * sin_theta * sin_phi,
 									.z = sphereCenter.z + sphereR * cos_theta,
+				};*/
+				double local_x = sphereR * sin_theta * cos_phi; // along T
+				double local_y = sphereR * sin_theta * sin_phi; // along B
+				double local_z = sphereR * cos_theta;           // along N
+
+				CAGD_POINT tmp = {
+					.x = sphereCenter.x + local_x * Tmy_pts[index].x + local_y * Bmy_pts[index].x + local_z * Nmy_pts[index].x,
+					.y = sphereCenter.y + local_x * Tmy_pts[index].y + local_y * Bmy_pts[index].y + local_z * Nmy_pts[index].y,
+					.z = sphereCenter.z + local_x * Tmy_pts[index].z + local_y * Bmy_pts[index].z + local_z * Nmy_pts[index].z,
 				};
 				sphereSpiralPoints[i] = tmp;
 				i++;
