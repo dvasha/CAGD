@@ -1,0 +1,227 @@
+Defines:
+	MAX_CURVES = 32
+
+Globals:
+	int curveCount;
+	double stepSize;
+	CURVE_STRUCT *curveArray[MAX_CURVES];
+	UINT cagd_curve[MAX_CURVES];
+	UINT (*cagd_controlPolygon)[MAX_CURVES];
+	int activeIndex;
+	int displayKnotIndex;
+	int defaultDegree;
+	
+CURVE_STRUCT:
+	boolean isSpline;
+	int order;
+	int knotNum;
+	int pointNum;
+	double* knotVec;
+	double(*pointVec)[3];
+	UINT* weightVec;
+	UINT* polyVec;
+	int index;
+	
+enum:
+
+functions:
+FILE IO:
+
+	void myRead(int x, int y, PVOID userData); 
+		Reads a file of Beziers (and/ or) Bsplines. 
+		Creates CURVE_STRUCT for each curve and add it to the curveArray.
+
+	void mySave(int x, int y, PVOID userData); 
+		Generates a file of Beziers (and/ or) Bsplines using the curves displayed.
+
+void myMenu(int id, int unUsed, PVOID userData);
+	Adds menu functionalities for each option, using functions and callbacks.
+	Menu list: 
+		Add Bezier curve
+			creates new curve struct, updates activeIndex, LBUTTON_DOWN is now addBezierInteraction
+		Add B-spline curve
+			creates new curve struct with order=defaultDegree, updates activeIndex, LBUTTON_DOWN is now addBsplineInteraction
+		Connect Curves (C0, G1, C1)
+			pickCurves and then connectC0/G1/C1 on them. 
+		Draw Control Polygons
+		Remove all Curves.
+		Propterties (default B-spline degree, sampling step)
+			MY_DIALOG_PROC like properties in demo/ hw2
+	Default callbacks: 
+		LBUTTON_DOWN => myLeftClickInteraction
+		RBUTTON_DOWN => myRightClickInteraction
+		Rest => NULL
+
+CALLBACKS:
+
+	void myLeftDragInteraction(int x, int y, PVOID userData);
+		if on control polygon or curve:
+			move control polygon
+		if on weight of control point:
+			modify weight of control point. 
+		If on knot:
+			move knot
+
+	void myRightClickInteraction(int x, int y, PVOID userData);
+		If on control polygon:
+			(on vertex) remove point.
+			(not on vertex) Insert point.
+		If on control polygon or curve:
+			Append point.
+			Prepend point.
+			Draw control polygon.
+			Remove curve.
+			Change Bspline end.
+			View knots.				
+		else popup of myMenu.
+
+	void myLeftClickInteraction(int x, int y, PVOID userData);
+		change activeIndex to result of findIndex
+		MOUSEMOVE => myLeftDragInteraction
+
+	void addBezierInteraction(int x, int y, PVOID userData);
+		every click adds point to the struct of activeIndex in (x,y).
+		frees and creates the curve.
+
+	void addBsplineInteraction(int x, int y, PVOID userData);
+		every click adds point to the struct of activeIndex in (x,y).
+		frees and creates the curve.
+
+		
+void pickCurves(int * first, int * second);
+	get two indices using myLeftClickInteraction and active index.
+	Upon first index found, change color of the curve.
+	when second found, enter the indices to first second.
+
+int findIndex(int x, int y); 
+	Takes point in the screen and if a curve/ control polygon exists there, returns the index.
+	Use cagdPick, cagdPickNext and compare against curveArray and each curve polygon.
+
+void viewKnots(int index);
+		add polyline for displaying the knot vector, and add triangles to display the knot positions.
+		updates displayKnotIndex.
+
+MODIFICATIONS:
+	void moveCurveFromIndex(int index, int x, int y);
+		cagdFreeSegment on the curve, its conntrol poolygon and its weight circles.
+		Modify each point by x, y.
+		call createCurveFromIndex on it. 
+
+	void modifyWeightOfControlPointFromIndex(int index, UINT pointId, int x, int y);
+		find the point in the pointVec using pointId and cagdGetSegmentLocation. 
+		cagdFreeSegment on the curve, its control polygon and its weight circles.
+		Find the new weight using dist(controlPoint , (x,y)) either as and set the distance as the new weight.
+		Modify the weight in the pointVec.
+		call createCurveFromIndex on it.
+	
+	void insertPoint(int index, int x, int y);
+		Like in findIndex, but cagdPick, cagdPickNext on the control polygons to get the UINT of the specific line.
+		Use cagdGetSegmentLocation to get the 2 points defining the polygon.
+		cagdFreeSegment on the curve, its control polygon and its weight circles.
+		Add the new point between the two points (in pointVec).
+		Call createCurveFromIndex.
+
+	void removePoint(int index, UINT pointId);
+		find the point in pointVec using pointId and cagdGetSegmentLocation. 
+		decrement numPts
+		create newPointVec without the point we don't need.
+		call createCurveFromIndex
+
+	void appendPoint(int index, int x, int y);
+		cagdFreeSegment on the curve, its control polygon and its weight circles.
+		increment numPts
+		newpointVec[0] = (x,y, default weight)
+		newPOointVec[i] = pointVec[i-1];
+		call createCurveFromIndex
+	
+	void prependPoint(int index, int x, int y);
+		cagdFreeSegment on the curve, its control polygon and its weight circles.
+		increment numPts
+		newpointVec[numPts-1] = (x,y, default weight)
+		newPOointVec[i] = pointVec[i];
+		call createCurveFromIndex
+
+	void changeBsplineEnd(int index);
+		if the knotvector has multiplicity for open/floating end, remove/add them to get floating/open point. 
+		if the bspline is neight open nor floating, go by default to open.
+	
+	void moveKnot(UINT knot, int x, int y);
+		based on x,y finds the new value of the knot.
+		removing the previous knot value (using it's location from cagdGetSegmentLocation) from the curve, adding in the new position.
+		cagdFreeSegment the curve and then createCurveFromIndex.
+	
+CONTROL POLYGONS:
+
+	void drawALLControlPolygons();
+		calls showControlPolygon on all indices.
+	void hideALLControlPolygons();
+		calls hideControlPolygon on all indices.
+
+	void showControlPolygon(int index);
+		show the control polygon.
+
+	void hideControlPolygon(int index);
+		hide the control polygon.
+
+CREATE/REMOVE CURVE:
+
+	void removeAllCurves();
+		use removeCurveFromIndex on all indices.
+
+	void createCurveFromIndex(int index);
+		If the index
+		Takes index of a curve.
+		Creates Bezier/ Bspline curve polyline
+		creates CAGD polyline of the control polygon
+		creates CAGD polyline circle of the weight.
+
+	void removeCurveFromIndex(int index);
+		Calls cagdFreeSegment on the curve, its control polygon and its weight circles.
+		Frees all allocated memory in the curve struct, and sets it's index in the arrays to NULL.
+
+	void createBsplineFromBezier(int index);
+		cagdFreeSegment. Add an appropriate knot vector and then create curve from index.
+
+	HELPERS:
+		void weightedDeCasteljau(int index, double t);
+			using control points use De Casteljau to calculate the value of the Bezier at t.
+		
+		void weightedCoxdeBoor(int index, double t);
+			using control points, knot vector use cox de Boor to calculate the value of the bspline at t.
+
+	void createCurvePolyline(int index);
+		if Bezier: run De Casteljau for each step in the domain [0, 1].
+		if Bspline: run Cox-de Boor for each step in the domain [0,1]
+		aggregate the resulting values into an array of CAGD_POINTs and then create polyline.
+
+	void createWeightCircles(int index);
+		on each control point, draw a circle with the control point as the center, and the radius of the circle is the weight.
+
+	void connectC0(int first, int second);
+		ensure curve type compaitibility.
+		use moveCurveFromIndex on second to the last point of first.
+		free curves and associatted cagd stuff.
+		create new struct of curve to combine the two.
+		first index now has the new struct, second is nulled.
+		createCurveFromIndex.
+
+	void connectG1(int first, int second);
+		ensure curve type compaitibility.
+		use moveCurveFromIndex on second to the last point of first.
+		rotate second to get the same tangent direction of first (using last points of first, first points of second).
+		free curves and associatted cagd stuff.
+		create new struct of curve to combine the two.
+		first index now has the new struct, second is nulled.
+		createCurveFromIndex.
+
+	void connectC1(int first, int second);
+		ensure curve type compaitibility.
+
+		IMPLEMENTATION??? POINT MODIFICATIONS?? KNOTS??
+		
+		free curves and associatted cagd stuff.
+		create new struct of curve to combine the two.
+		first index now has the new struct, second is nulled.
+		createCurveFromIndex.
+
+

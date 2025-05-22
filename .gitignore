@@ -1,8 +1,1 @@
-demo/Debug/demo.exe
 *.ipch
-*.db
-*.db-wal
-*.db-shm
-*.db
-*.db
-*.opendb
