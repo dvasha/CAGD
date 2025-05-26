@@ -11,21 +11,19 @@
 
 #define MAX_CURVES 32
 #define NO_INDEX -3
-
+#define CIRCLE_PTS 64
+#define PI 3.141592653589793
 
 enum {
-	MY_CLICK = CAGD_USER,
-	MY_POLY,
-	MY_ANIM,
-	MY_DRAG,
-	MY_ADD,
-	MY_COLOR,
-	MY_REMOVE,
-	MY_COORD,
-	
+	MY_CREATEBEZIER = CAGD_USER,
+	MY_CREATEBSPLINE,
+	MY_CONNECTC0,
+	MY_CONNECTG1,
+	MY_CONNECTC1,
+	MY_CLEARALL,
 	M_PROPERTIES,
 };
-t
+
 
 char *animText[] = {
 	"Animation Demo",
@@ -71,9 +69,9 @@ typedef struct {
 	int knotNum;
 	int pointNum;
 	double* knotVec;
-	double(*pointVec)[3];
-	UINT* weightVec;
-	UINT* polyVec;
+	CAGD_POINT *pointVec;
+	UINT* weightVec; // has all the circles of the weight
+	UINT polyVec; // has all linear polys to create the polygon vector
 	int index;
 }
 CURVE_STRUCT;
@@ -83,15 +81,208 @@ UINT myText;
 char myBuffer[BUFSIZ];
 FILE* fptr;
 
-int curveCount = 0;
-double stepSize = 0.1;
+int curveCount;
+double stepSize;
 CURVE_STRUCT *curveArray[MAX_CURVES];
 UINT cagd_curve[MAX_CURVES];
-UINT cagd_controlPolygon[MAX_CURVES];
 int activeIndex;
 int displayKnotIndex;
 int defaultDegree;
 
+
+// CREATE/ REMOVE CURVE
+
+void removeCurveFromIndex(int index) {
+	if (curveArray[index] != NULL) {
+		for (int i = 0; i < curveArray[index]->pointNum; i++) {
+			cagdFreeSegment(curveArray[index]->weightVec);
+		}
+		for (int i = 0; i < curveArray[index]->pointNum - 1; i++) {
+			cagdFreeSegment(curveArray[index]->pointVec);
+		}
+		cagdFreeSegment(cagd_curve[index]);
+
+		if (curveArray[index]->isSpline) {
+			free(curveArray[index]->knotVec);
+			curveArray[index]->knotVec = NULL;
+		}
+		free(curveArray[index]->pointVec);
+		curveArray[index]->pointVec = NULL;
+
+
+		free(curveArray[index]->weightVec);
+		curveArray[index]->weightVec = NULL;
+
+		//free(curveArray[index]->polyVec);
+		//curveArray[index]->polyVec = NULL;
+	}
+	free(curveArray[index]);
+	curveArray[index] = NULL;
+}
+
+void removeAllCurves() {
+	for (int i = 0; i < MAX_CURVES; i++) {
+		removeCurveFromIndex(i);
+	}
+}
+
+CAGD_POINT weightedDeCasteljau(int index, double t) {
+	int n = curveArray[index]->pointNum;
+	int ord = curveArray[index]->order;
+	CAGD_POINT result;
+	CAGD_POINT *tempPoints = (CAGD_POINT *)malloc(sizeof(CAGD_POINT) * n);
+	for (int i = 0; i < n; i++) {
+		tempPoints[i] = curveArray[index]->pointVec[i];
+	}
+	for (int k = 1; k <= ord; k++) {
+		for (int i = 0; i < n-k; i++) {
+			tempPoints[i].x = tempPoints[i].x * (1 - t) + tempPoints[i + 1].x * t;
+			tempPoints[i].y = tempPoints[i].y * (1 - t) + tempPoints[i + 1].y * t;
+			tempPoints[i].z = tempPoints[i].z * (1 - t) + tempPoints[i + 1].z * t;
+		}
+	}
+	// rational (weighted)
+	if(tempPoints[0].z){
+		result.x = tempPoints[0].x / tempPoints[0].z;
+		result.y = tempPoints[0].y / tempPoints[0].z;
+	}
+	else {
+		result.x = 0;
+		result.y = 0;
+	}
+	result.z = 0;
+	free(tempPoints);
+	return result;
+}
+
+CAGD_POINT NURBS(int index, double t) {
+	int n = curveArray[index]->pointNum;
+	int k = curveArray[index]->order - 1;
+	double* knotVector = curveArray[index]->knotVec;
+	CAGD_POINT* pointVector = curveArray[index]->pointVec;
+	CAGD_POINT* nurb_a;
+	CAGD_POINT result;
+	int di;
+	if (t == knotVector[n + 1]) {
+		di = n;
+	}
+	else{
+		for (di = k; di <= n; di++) {
+			if (t >= knotVector[di] && t < knotVector[di + 1]) {
+				break;
+			}
+		}
+	}
+	nurb_a = (CAGD_POINT*)malloc(sizeof(CAGD_POINT) * (k + 1));
+	for (int i = 0; i <= k; i++) {
+		nurb_a[i] = pointVector[i + di - k];
+	}
+
+	for (int p = 1; p <= k; p++) {
+		for (int i = k; i >= p; i--) {
+			double denom = (knotVector[i + 1 + di - p] - knotVector[i + di - k]);
+			double alpha;
+			if (denom != 0) {
+				 alpha = (t - knotVector[i + di - k]) / denom;
+			}
+			else {
+				alpha = 0;
+			}
+			nurb_a[i].x = (1.0 - alpha) * nurb_a[i - 1].x + alpha * nurb_a[i].x;
+			nurb_a[i].y = (1.0 - alpha) * nurb_a[i - 1].y + alpha * nurb_a[i].y;
+			nurb_a[i].z = (1.0 - alpha) * nurb_a[i - 1].z + alpha * nurb_a[i].z;
+		}
+	}
+	result.x = nurb_a[k].x / nurb_a[k].z;
+	result.y = nurb_a[k].y / nurb_a[k].z;
+	result.z = 0;
+	free(nurb_a);
+	nurb_a = NULL;
+	return result;
+}
+
+void printCurve(int index) {
+	printf("curve index = %d \n", index);
+	printf("isSpline = %d \n", curveArray[index]->isSpline);
+	printf("order = %d \n", curveArray[index]->order);
+	
+	if (curveArray[index]->isSpline) {
+		printf("knotNum = %d \n", curveArray[index]->knotNum);
+		for (int i = 0; i < curveArray[index]->knotNum; i++) {
+			printf("knot[%d] = %lf \n", i, curveArray[index]->knotVec[i]);
+		}
+	}
+	printf("pointNum = %d \n", curveArray[index]->pointNum);
+	for (int i = 0; i < curveArray[index]->pointNum; i++) {
+		printf("point[%d] = %lf \t %lf \t %lf\n", i, curveArray[index]->pointVec[i]);
+	}
+}
+
+UINT createCurvePolyline(int index) {
+	if (curveArray[index] == NULL) {
+		printf("unexpected error");
+		return;
+	}
+	printCurve(index);
+	UINT polyID;
+	if (curveArray[index]->isSpline) {
+		int degree = curveArray[index]->order - 1;
+		int domain_min = curveArray[index]->knotVec[degree];
+		int domain_max = curveArray[index]->knotVec[curveArray[index]->knotNum - degree -1];
+		int totalsteps = ((domain_max - domain_min) / stepSize) + 1;
+		CAGD_POINT* vec = (CAGD_POINT*)malloc(sizeof(CAGD_POINT) * (totalsteps));
+
+		double step = 0;
+		for (int i = 0; i < totalsteps; i++) {
+			
+			vec[i] = NURBS(index, step);
+			printf("t = %lf \t vec[%d] = %lf %lf %lf\n", step, i, vec[i].x, vec[i].y, vec[i].z);
+			step = step + stepSize;
+			
+		}
+		polyID = cagdAddPolyline(vec, totalsteps);
+		free(vec);
+	}
+	else {
+		int totalsteps = (1 / stepSize) + 1;
+		CAGD_POINT* vec = (CAGD_POINT*)malloc(sizeof(CAGD_POINT) * totalsteps);
+		double step = 0;
+		for (int i = 0; i < totalsteps; i++) {
+			vec[i] = weightedDeCasteljau(index, step);
+			step = step + stepSize;
+			if (step > 1.0) {
+				step = 1.0;
+			}
+		}
+		polyID = cagdAddPolyline(vec, totalsteps);
+		free(vec);
+	}
+	return polyID;
+}
+
+
+void createWeightCircles(int index) {
+	CAGD_POINT circlePoints[CIRCLE_PTS+1];
+	double x, y, R;
+	for (int i = 0; i < curveArray[index]->pointNum; i++) {
+		double theta = 0;
+		double step = 2* PI / CIRCLE_PTS;
+		R = curveArray[index]->pointVec[i].z;
+		for (int j = 0; j < CIRCLE_PTS; j++) {
+			x = R * cos(theta + step * j);
+			y = R * sin(theta + step * j);
+			circlePoints[j].x = curveArray[index]->pointVec[i].x + x;
+			circlePoints[j].y = curveArray[index]->pointVec[i].y + y;
+			circlePoints[j].z = 0;
+		}
+		circlePoints[CIRCLE_PTS] = circlePoints[0];
+		curveArray[index]->weightVec[i] = cagdAddPolyline(circlePoints, CIRCLE_PTS+1);
+	}
+}
+
+UINT createControlPolygon(int index) {
+	return cagdAddPolyline(curveArray[index]->pointVec, curveArray[index]->pointNum);
+}
 
 void myMessage(PSTR title, PSTR message, UINT type)
 {
@@ -120,45 +311,39 @@ LRESULT CALLBACK myDialogProc(HWND hDialog, UINT message, WPARAM wParam, LPARAM 
 void addBezier(int x, int y, PVOID userData) {
 }
 
-// get B(t) using t, and the (weighted) points
-CAGD_POINT DeCasteljau(double t, CAGD_POINT* pts, int numPts) {
-	// https://en.wikipedia.org/wiki/De_Casteljau%27s_algorithm#Implementations
-	CAGD_POINT* B = (CAGD_POINT*)malloc(numPts * sizeof(CAGD_POINT));
-	memcpy(B, pts, numPts * sizeof(CAGD_POINT));
-	for (int i = 1; i < numPts; i++) {
-		for (int j = 0; j < (numPts - i); j++) {
-			B[j].x = B[j].x * (1 - t) + B[j + 1].x * t;
-			B[j].y = B[j].y * (1 - t) + B[j + 1].y * t;
 
-		}
-	}
-	CAGD_POINT val = B[0];
-	free(B);
-	return val;
+CAGD_CALLBACK myCommand(int x, int y, PVOID userData) {
+
 }
 
+void createCurveFromIndex(int index) {
+	cagd_curve[index] = createCurvePolyline(index);
+	createWeightCircles(index);
+	curveArray[index]->polyVec = createControlPolygon(index);
+	cagdRedraw();
+}
 
 int findAvailableIndex() {
 	for (int i = 0; i < MAX_CURVES; i++) {
-		if (curveArray[i] = NULL)
+		if (curveArray[i] == NULL)
 			return i;
 	}
 	return NO_INDEX;
 }
 
-
-// adds points for each curve in the file, then add them to the array of the controlVectors, for further processing.
+// IO
 void myRead(int x, int y, PVOID userData) {
 	boolean isBspline = FALSE;
-	double* knotVector;
-	double (*controlVector)[3];
-	UINT* weightVector;
-	UINT* polygonVector;
+	boolean curveIncomplete = FALSE;
+	double* knotVector =NULL ;
+	CAGD_POINT *controlVector = NULL;
+	UINT* weightVector =NULL;
+	UINT* polygonVector =NULL;
 	int order = 0;
 	int numPts = 0;
 	int numKnots = 0;
 	int idx = -1;
-	CURVE_STRUCT *newCurve;
+	CURVE_STRUCT *newCurve = NULL;
 
 
 	fptr = fopen((char*)x, "r");
@@ -166,70 +351,82 @@ void myRead(int x, int y, PVOID userData) {
 		while (fgets(myBuffer, 1024, fptr)) { //reads a line
 			idx = findAvailableIndex();
 			if (idx < 0 ) {
-				printf("TOO MANY CURVE ARE DISPLAYED!\n Please remove a curve before adding a new one.\n");
+				printf("TOO MANY CURVES ARE DISPLAYED!\n Please remove a curve before adding a new one.\n");
 				return;
 			}
 			else {
 				newCurve = (CURVE_STRUCT*)malloc(sizeof(CURVE_STRUCT));
-			}
-			if (myBuffer[0] == '#') {
-				continue;
-			}
-			if (myBuffer[0] == '\n') {
-				continue;
-			}
-			if (strstr(myBuffer, "knots")) {
-				// we have a bspline
-				isBspline = TRUE;
-				sscanf(myBuffer, " knots [ %d ] = ", &numKnots);
-				knotVector = (double*)malloc(sizeof(double) * numKnots);
-				for (int i = 0; i < numKnots; i++) {
-					fgets(myBuffer, 1024, fptr);
-					sscanf(myBuffer, "%lf ", &knotVector[i]);
-				}
-				continue;
-			}
-			else {
-				//sscanf(myBuffer, "%d", &numControlPoints[curveCount]);
-				sscanf(myBuffer, "%d", &order);
-				if (isBspline) {
-					numPts = numKnots - order;
-				}
-				else {
-					numPts = order;
-				}
-				//controlVectors[curveCount] = (CAGD_POINT*)malloc(sizeof(CAGD_POINT) * (numControlPoints[curveCount]));
-				controlVector = (double *) malloc(sizeof(double[3]) * numPts);
-				weightVector = (UINT *)malloc(sizeof(UINT) * numPts);
-				polygonVector = (UINT *)malloc(sizeof(UINT) * (numPts-1));
-				for (int i = 0; i < numPts;) {
-					fgets(myBuffer, 1024, fptr);
-					if (myBuffer[0] == '#') {
+				curveIncomplete = TRUE;
+				while (curveIncomplete) {
+					if (myBuffer[0] == '#' || myBuffer[0] == '\n') {
+						fgets(myBuffer, 1024, fptr);
 						continue;
 					}
-					else if (myBuffer[0] == '\n') {
+					if (order == 0 && myBuffer[0] >= '0' && myBuffer[0] <= '9') {
+						sscanf(myBuffer, "%d", &order);
+						fgets(myBuffer, 1024, fptr);
 						continue;
+					}
+					if (strstr(myBuffer, "knots")) {
+						// we have a bspline
+						int offset = 0;
+						int n = 0;
+						isBspline = TRUE;
+						sscanf(myBuffer, " knots [%d] = %n", &numKnots, &n);
+						offset += n;
+						knotVector = (double*)malloc(sizeof(double) * numKnots);
+						for (int i = 0; i < numKnots; ) {
+							while (sscanf(myBuffer + offset, "%lf%n", &knotVector[i], &n) == 1) {
+								i++;
+								offset += n;
+								if (i == numKnots) {
+									break;
+								}
+							}
+							fgets(myBuffer, 1024, fptr); //newline
+							offset = 0;
+
+						}
+					}
+					if (isBspline) {
+						numPts = numKnots - order;
 					}
 					else {
-						if (sscanf(myBuffer, "%lf %lf %lf", &controlVector[i][0], &controlVector[i][1], &controlVector[i][2]) == 2) {
-							controlVector[i][2] = 1.0;
-						}
-						
-						i++;
+						numPts = order;
+						order = order - 1;
 					}
+					controlVector = (CAGD_POINT *)malloc(sizeof(CAGD_POINT) * numPts);
+					weightVector = (UINT *)malloc(sizeof(UINT) * numPts);
+					//polygonVector = (UINT *)malloc(sizeof(UINT) * (numPts - 1));
+					for (int i = 0; i < numPts;) {
+						fgets(myBuffer, 1024, fptr);
+						if (myBuffer[0] == '#' || myBuffer[0] == '\n') {
+							continue;
+						}
+						else {
+							if (sscanf(myBuffer, "%lf %lf %lf", &controlVector[i].x, &controlVector[i].y, &controlVector[i].z) == 2) {
+								controlVector[i].z = 1.0;
+							}
+							i++;
+						}
+						curveIncomplete = FALSE;
+					}
+					
 				}
+			
 				//add curve to global curve list
-				 CURVE_STRUCT tmp = {.isSpline = isBspline,
-								.order = order,
-								.knotNum = numKnots,
-								.pointNum = numPts,
-								.knotVec = knotVector,
-								.pointVec = controlVector,
-								.weightVec = weightVector,
-								.polyVec = polygonVector,
-								.index = idx };
-				 (*newCurve) = tmp;
-				 curveArray[idx] = newCurve;
+				CURVE_STRUCT tmp = { .isSpline = isBspline,
+							   .order = order,
+							   .knotNum = numKnots,
+							   .pointNum = numPts,
+							   .knotVec = knotVector,
+							   .pointVec = controlVector,
+							   .weightVec = weightVector,
+							   .polyVec = polygonVector,
+							   .index = idx };
+				(*newCurve) = tmp;
+				curveArray[idx] = newCurve;
+				createCurveFromIndex(idx);
 			}
 		}
 		fclose(fptr);
@@ -257,9 +454,9 @@ void mySave(int x, int y, PVOID userData) {
 			}
 			for (int pi = 0; pi < currCurve->pointNum; pi++) {
 				fprintf(fptr, "%lf %lf %lf\n",
-					currCurve->pointVec[pi][0],
-					currCurve->pointVec[pi][1],
-					currCurve->pointVec[pi][2]
+					currCurve->pointVec[pi].x,
+					currCurve->pointVec[pi].y,
+					currCurve->pointVec[pi].z
 					);
 			}
 		}
@@ -267,41 +464,52 @@ void mySave(int x, int y, PVOID userData) {
 	}
 }
 
-
-
 void initializeGlobals() {
+	curveCount = 0;
+	stepSize = 0.01;
 	for (int i = 0; i < MAX_CURVES; i++) {
 		curveArray[i] = NULL;
+		cagd_curve[i] = NULL;
 	}
+	activeIndex = NO_INDEX;
+	displayKnotIndex = NO_INDEX;
+	defaultDegree = 3;
 }
 
 int main(int argc, char *argv[])
 {
-	initalizeGlobals();
+	initializeGlobals();
 
-	HMENU hMenu;
+	HMENU hMenu, myPopup, connectMenu;
 	cagdBegin("CAGD", 512, 512);
+
+	//connectMenu
+	connectMenu = CreatePopupMenu();
+	AppendMenu(connectMenu, MF_STRING, MY_CONNECTC0, "Connect C0");
+	AppendMenu(connectMenu, MF_STRING, MY_CONNECTG1, "Connect G1");
+	AppendMenu(connectMenu, MF_STRING, MY_CONNECTC1, "Connect C1");
+	
+
 	hMenu = CreatePopupMenu();
-	AppendMenu(hMenu, MF_STRING, MY_CLICK, "Click");
-	AppendMenu(hMenu, MF_STRING, MY_POLY, "Polyline");
-	AppendMenu(hMenu, MF_STRING, MY_ANIM, "Animation");
-	AppendMenu(hMenu, MF_STRING, MY_DRAG, "Drag, Popup & Dialog");
-	cagdAppendMenu(hMenu, "Demos");
-	myPopup = CreatePopupMenu();
-	AppendMenu(myPopup, MF_STRING | MF_DISABLED, 0, "Point");
-	AppendMenu(myPopup, MF_SEPARATOR, 0, NULL);
-	AppendMenu(myPopup, MF_STRING, MY_ADD, "Add");
-	AppendMenu(myPopup, MF_SEPARATOR, 0, NULL);
-	AppendMenu(myPopup, MF_STRING, MY_COLOR, "Change color...");
-	AppendMenu(myPopup, MF_STRING, MY_REMOVE, "Remove");
-	//cagdRegisterCallback(CAGD_MENU, myCommand, (PVOID)hMenu);
+	AppendMenu(hMenu, MF_STRING, MY_CREATEBEZIER, "Create Bezier");
+	AppendMenu(hMenu, MF_STRING, MY_CREATEBSPLINE, "Create B-Spline");
+	AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
+	AppendMenu(hMenu, MF_STRING | MF_POPUP, connectMenu , "Connect");
+	AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
+	AppendMenu(hMenu, MF_STRING, MY_CLEARALL, "Clear all curves");
+	AppendMenu(hMenu, MF_STRING, M_PROPERTIES, "Properties");
+	cagdAppendMenu(hMenu, "Curves");
+
+
+	cagdRegisterCallback(CAGD_MENU, myCommand, (PVOID)hMenu);
+
 
 
 	cagdRegisterCallback(CAGD_LOADFILE, myRead, NULL);
 	cagdRegisterCallback(CAGD_SAVEFILE, mySave, NULL);
 
 	
-	cagdShowHelp();
+	//cagdShowHelp();
 	cagdMainLoop();
 	return 0;
 }

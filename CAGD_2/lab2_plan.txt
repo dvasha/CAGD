@@ -1,12 +1,13 @@
 Defines:
 	MAX_CURVES = 32
+	NO_INDEX = -3
 
 Globals:
 	int curveCount;
 	double stepSize;
 	CURVE_STRUCT *curveArray[MAX_CURVES];
-	UINT cagd_curve[MAX_CURVES];
-	UINT (*cagd_controlPolygon)[MAX_CURVES];
+	UINT cagd_curve[MAX_CURVES]; // on the chopping board as well
+	UINT *cagd_controlPolygon[MAX_CURVES]; //removed because it seems troublesome
 	int activeIndex;
 	int displayKnotIndex;
 	int defaultDegree;
@@ -17,12 +18,12 @@ CURVE_STRUCT:
 	int knotNum;
 	int pointNum;
 	double* knotVec;
-	double(*pointVec)[3];
+	CAGD_POINT *pointVec;
 	UINT* weightVec;
-	UINT* polyVec;
+	UINT polyVec;
 	int index;
 	
-enum:
+
 
 functions:
 FILE IO:
@@ -30,6 +31,7 @@ FILE IO:
 	void myRead(int x, int y, PVOID userData); 
 		Reads a file of Beziers (and/ or) Bsplines. 
 		Creates CURVE_STRUCT for each curve and add it to the curveArray.
+
 
 	void mySave(int x, int y, PVOID userData); 
 		Generates a file of Beziers (and/ or) Bsplines using the curves displayed.
@@ -183,19 +185,23 @@ CREATE/REMOVE CURVE:
 		cagdFreeSegment. Add an appropriate knot vector and then create curve from index.
 
 	HELPERS:
-		void weightedDeCasteljau(int index, double t);
+		CAGD_POINT weightedDeCasteljau(int index, double t);
 			using control points use De Casteljau to calculate the value of the Bezier at t.
-		
-		void weightedCoxdeBoor(int index, double t);
+			returns the resulting values, with the weight included.
+
+		double weightedCoxdeBoor(int index, double t);
 			using control points, knot vector use cox de Boor to calculate the value of the bspline at t.
 
-	void createCurvePolyline(int index);
+	UINT createCurvePolyline(int index);
 		if Bezier: run De Casteljau for each step in the domain [0, 1].
 		if Bspline: run Cox-de Boor for each step in the domain [0,1]
 		aggregate the resulting values into an array of CAGD_POINTs and then create polyline.
-
+		returns the ID of the polyline
+	
 	void createWeightCircles(int index);
 		on each control point, draw a circle with the control point as the center, and the radius of the circle is the weight.
+
+	UINT createControlPolygon(int index);
 
 	void connectC0(int first, int second);
 		ensure curve type compaitibility.
