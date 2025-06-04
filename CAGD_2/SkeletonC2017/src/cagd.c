@@ -245,6 +245,7 @@ void cagdBegin(PCSTR title, int width, int height)
   glPointSize((GLfloat)POINT_SIZE); 
   cagdReset();
   createMenu();
+  glClearColor(0.831, 0.416, 0.592, 1);
 }
 
 void cagdMainLoop()

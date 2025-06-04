@@ -133,21 +133,31 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="calculations.c" />
     <ClCompile Include="demo.c" />
+    <ClCompile Include="file_io.c" />
+    <ClCompile Include="leftovers.c" />
     <ClCompile Include="Source.cpp" />
+    <ClCompile Include="togglers.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="demo.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="calculations.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="structures.h" />
+    <ClInclude Include="togglers.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\cagd.vcxproj">
       <Project>{c868d557-2c7f-48bc-9748-22fa7ae15d2e}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\psyduck_icon-icons.com_67509.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

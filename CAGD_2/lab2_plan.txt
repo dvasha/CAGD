@@ -1,6 +1,10 @@
 Defines:
-	MAX_CURVES = 32
-	NO_INDEX = -3
+MAX_CURVES =	 32
+NO_INDEX =	 -3
+CIRCLE_PTS =	 64
+PI =	 3.141592653589793
+NO_CURVE =	 -1
+MY_ZERO =	 1e-8
 
 Globals:
 	int curveCount;
@@ -12,8 +16,17 @@ Globals:
 	int displayKnotIndex;
 	int defaultDegree;
 	
+
+typedef enum {
+	BSPLINE_UNKNOWN,
+	BSPLINE_CLAMPED,
+	BSPLINE_FLOATING
+} BsplineType;
+
+
 CURVE_STRUCT:
 	boolean isSpline;
+	BsplineType splineType;
 	int order;
 	int knotNum;
 	int pointNum;
@@ -61,6 +74,8 @@ CALLBACKS:
 			move control polygon
 		if on weight of control point:
 			modify weight of control point. 
+		if on control point:
+			move control point
 		If on knot:
 			move knot
 

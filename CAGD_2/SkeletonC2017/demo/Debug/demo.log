@@ -1,27 +1,13 @@
 ﻿  demo.c
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(98): warning C4047: 'function': 'UINT' differs in levels of indirection from 'UINT *'
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(98): warning C4024: 'cagdFreeSegment': different types for formal and actual parameter 1
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(101): warning C4047: 'function': 'UINT' differs in levels of indirection from 'CAGD_POINT *'
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(101): warning C4024: 'cagdFreeSegment': different types for formal and actual parameter 1
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(217): warning C4477: 'printf' : format string '%lf' requires an argument of type 'double', but variadic argument 2 has type 'CAGD_POINT'
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(217): warning C4473: 'printf' : not enough arguments passed for format string
-  c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(217): note: placeholders and their parameters expect 4 variadic arguments, but 2 were provided
-  c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(217): note: the missing variadic argument 3 is required by format string '%lf'
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(224): warning C4033: 'createCurvePolyline' must return a value
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(230): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(231): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(232): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(247): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(418): warning C4047: 'initializing': 'UINT' differs in levels of indirection from 'UINT *'
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(447): warning C4133: 'function': incompatible types - from 'char [15]' to 'FILE *const '
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(447): warning C4047: 'function': 'const char *const ' differs in levels of indirection from 'int'
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(447): warning C4024: 'fprintf': different types for formal and actual parameter 2
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(472): warning C4047: '=': 'UINT' differs in levels of indirection from 'void *'
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(497): warning C4047: 'function': 'UINT_PTR' differs in levels of indirection from 'HMENU'
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(497): warning C4024: 'AppendMenuA': different types for formal and actual parameter 3
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(504): warning C4047: 'function': 'CAGD_CALLBACK' differs in levels of indirection from 'CAGD_CALLBACK (__cdecl *)(int,int,PVOID)'
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(504): warning C4024: 'cagdRegisterCallback': different types for formal and actual parameter 2
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(483): warning C4101: 'myPopup': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(261): warning C4715: 'createCurvePolyline': not all control paths return a value
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(317): warning C4716: 'myCommand': must return a value
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(191): warning C4101: 'b': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(191): warning C4101: 'g': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(191): warning C4101: 'r': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(379): warning C4022: 'cagdRegisterCallback': pointer mismatch for actual parameter 3
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(397): warning C4022: 'cagdRegisterCallback': pointer mismatch for actual parameter 3
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(573): warning C4047: 'function': 'UINT_PTR' differs in levels of indirection from 'HMENU'
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(573): warning C4024: 'AppendMenuA': different types for formal and actual parameter 3
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(584): warning C4047: 'function': 'CAGD_CALLBACK' differs in levels of indirection from 'CAGD_CALLBACK (__cdecl *)(int,int,PVOID)'
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(584): warning C4024: 'cagdRegisterCallback': different types for formal and actual parameter 2
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(559): warning C4101: 'myPopup': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(528): warning C4716: 'myCommand': must return a value
   demo.vcxproj -> C:\Users\DVASH\OneDrive - Technion\Spring25\CAGD\CAGD\CAGD_2\SkeletonC2017\demo\.\Debug\demo.exe
