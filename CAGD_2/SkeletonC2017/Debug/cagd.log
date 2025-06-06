@@ -1,3 +1,2 @@
 ﻿  cagd.c
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\src\cagd.c(248): warning C4305: 'function': truncation from 'double' to 'GLclampf'
   cagd.vcxproj -> C:\Users\DVASH\OneDrive - Technion\Spring25\CAGD\CAGD\CAGD_2\SkeletonC2017\.\Debug\cagdD.lib

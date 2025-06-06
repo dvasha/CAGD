@@ -35,6 +35,7 @@ enum { /* events to register callback functions with */
   CAGD_MENU,
   CAGD_LOADFILE,
   CAGD_SAVEFILE,
+  CAGD_CLICKMENU,
   CAGD_LAST,
 };
 

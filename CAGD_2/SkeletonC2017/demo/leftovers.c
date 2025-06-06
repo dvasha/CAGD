@@ -38,4 +38,73 @@ char *polyText[] = {
 };
 
 
+/*
+
+
+	for (int i = 0; i < MAX_CURVES; i++) {
+		if (found) {
+			break;
+		}
+		if (curveArray[i] != NULL) {
+			int n = curveArray[i]->pointNum;
+			cagdPick(x, y);
+			picked = cagdPickNext();
+			while (picked && !found) {
+				for (int j = 0; j < n; j++) {
+					cagdToObject(x, y, helper);
+					cagdGetSegmentLocation(curveArray[i]->pointDisp[j], &helper2);
+					//printf("(%lf, %lf)  |  (%lf, %lf)\n", helper[0].x, helper[0].y, helper2.x, helper2.y);
+					if (curveArray[i]->pointDisp[j] == picked) {
+						printf("clicked on a control point!\n");
+						activeIndex = i;
+
+						helper[1].x = helper[0].x;
+						helper[1].y = helper[0].y;
+						cagdRegisterCallback(CAGD_MOUSEMOVE, dragControlPoint, msg_idx);
+						cagdRegisterCallback(CAGD_LBUTTONUP, quitDrag, NULL);
+						found = TRUE;
+						break;
+					}
+				}
+				picked = cagdPickNext();
+			}
+			cagdPick(x, y);
+			picked = cagdPickNext();
+			cagdToObject(x, y, helper);
+			if (!found) {
+				for (int j = 0; j < n; j++) {
+					if (curveArray[i]->weightVec[j] == picked) {
+						printf("clicked on a weight circle!\n");
+						found = TRUE;
+
+						activeIndex = i;
+						cagdRegisterCallback(CAGD_MOUSEMOVE, dragWeight, msg_idx = j);
+						cagdRegisterCallback(CAGD_LBUTTONUP, quitDrag, NULL);
+						break;
+					}
+				}
+			}
+			// if polyline polygon or curve -> move control polygon
+			if (!found) {
+				if (curveArray[i]->curvePolyline == picked || curveArray[i]->polyVec == picked) {
+					printf("clicked on a curve or its control polygon\n");
+					activeIndex = i;
+					helper[1].x = helper[0].x - curveArray[activeIndex]->pointVec[0].x;
+					helper[1].y = helper[0].y - curveArray[activeIndex]->pointVec[0].y;
+					cagdRegisterCallback(CAGD_MOUSEMOVE, dragCurve, NULL);
+					cagdRegisterCallback(CAGD_LBUTTONUP, quitDrag, NULL);
+					found = TRUE;
+					break;
+				}
+			}
+
+		}
+	}
+	if (!found) {
+		printf("Didn't find anything here...\n");
+	}
+
+*/
+
+
 #pragma once

@@ -8,7 +8,7 @@
 #define Z_NEAR  0.001
 #define Z_SHIFT 2
 #define MAX_HITS 100
-#define POINT_SIZE 3
+#define POINT_SIZE 5
 
 static WORD view = CAGD_ORTHO;
 static BOOL cue = FALSE;
@@ -245,7 +245,8 @@ void cagdBegin(PCSTR title, int width, int height)
   glPointSize((GLfloat)POINT_SIZE); 
   cagdReset();
   createMenu();
-  glClearColor(0.831, 0.416, 0.592, 1);
+  glLineWidth(1.5);
+  glClearColor(1, 1, 1, 1);
 }
 
 void cagdMainLoop()

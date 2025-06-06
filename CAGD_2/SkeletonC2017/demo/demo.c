@@ -5,6 +5,7 @@
 #include "calculations.h"
 #include "togglers.h"
 
+
 #if defined(_WIN32)
     #if _MSC_VER >= 1900
 	#pragma comment(lib, "legacy_stdio_definitions.lib")
@@ -30,21 +31,36 @@ void myMessage(PSTR title, PSTR message, UINT type)
 	MessageBox(cagdGetWindow(), message, title, MB_OK | MB_APPLMODAL | type);
 }
 
-LRESULT CALLBACK myDialogProc(HWND hDialog, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	if (message != WM_COMMAND)
-		return FALSE;
-	switch (LOWORD(wParam)) {
-	case IDOK:
-		GetDlgItemText(hDialog, IDC_EDIT, myBuffer, sizeof(myBuffer));
-		EndDialog(hDialog, TRUE);
+LRESULT CALLBACK myDialogProc(HWND hDialog, UINT message, WPARAM wParam, LPARAM lParam) {
+	switch (message)
+	{
+	case WM_INITDIALOG:
+	{
+		char orderStr[16];
+		char stepStr[32];
+
+		sprintf(orderStr, "%d", defaultDegree + 1);
+		sprintf(stepStr, "%lf", stepSize);
+
+		SetDlgItemText(hDialog, IDC_EDIT_ORDER, orderStr);
+		SetDlgItemText(hDialog, IDC_EDIT_SSIZE, stepStr);
 		return TRUE;
-	case IDCANCEL:
-		EndDialog(hDialog, FALSE);
-		return TRUE;
-	default:
-		return FALSE;
 	}
+
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+		case IDOK:
+			GetDlgItemText(hDialog, IDC_EDIT_SSIZE, sizeBuffer, sizeof(sizeBuffer));
+			GetDlgItemText(hDialog, IDC_EDIT_ORDER, orderBuffer, sizeof(orderBuffer));
+			EndDialog(hDialog, TRUE);
+			return TRUE;
+		case IDCANCEL:
+			EndDialog(hDialog, FALSE);
+			return TRUE;
+		}
+		break;
+	}
+	return FALSE;
 }
 
 void rainbowify(BYTE* r, BYTE* g, BYTE* b) {
@@ -126,6 +142,7 @@ void addBezier(int x, int y, PVOID userData) {
 	crv->pointVec[(crv->pointNum) - 1].y = t[0].y;
 	crv->pointVec[(crv->pointNum) - 1].z = 1.0;
 	createCurveFromIndex(activeIndex);
+	cagdRedraw();
 }
 // to deinfe  a bspline curve of degree p with n+1 points  we have to supply n + p + 2 knots
 //ex p=3 n+1=2 => 1 + 3 + 2 = 6
@@ -188,12 +205,13 @@ void addBspline(int x, int y, PVOID userData) {
 			crv->knotVec[i] = (double)i;
 		}
 
-		BYTE r, g, b;
+		//BYTE r, g, b;
 		//cagdGetSegmentColor(crv->polyVec, &r, &g, &b);
 		//rainbowify(&r, &g, &b);
 		//cagdSetColor(r, g, b);
 	}
 	createCurveFromIndex(activeIndex);
+	cagdRedraw();
 }
 
 int activateCurveFromClick(int x, int y) {
@@ -228,6 +246,7 @@ void ConnectC1(int x, int y, PVOID userData) {
 
 	ConnectC1Aux();
 	resetConnectArray();
+	clearCheck(MY_CONNECTC1);
 	cagdRedraw();
 }
 void ConnectG1(int x, int y, PVOID userData) {
@@ -247,6 +266,7 @@ void ConnectG1(int x, int y, PVOID userData) {
 	ConnectC0Aux();
 	ConnectG1Aux();
 	resetConnectArray();
+	clearCheck(MY_CONNECTG1);
 	cagdRedraw();
 }
 void ConnectC0(int x, int y, PVOID userData) {
@@ -265,24 +285,10 @@ void ConnectC0(int x, int y, PVOID userData) {
 	// to connect two curves in C0 manner, we need to move the second curve first point to be in the first curve last point
 	ConnectC0Aux();
 	resetConnectArray();
+	clearCheck(MY_CONNECTC0);
 	cagdRedraw();
 }
 
-void createBsplineFromBezier(int index) {
-	CURVE_STRUCT *crv = curveArray[index];
-	if (crv->isSpline) {
-		fprintf(stdout, "This curve is already a bspline!\n");
-		return;
-	}
-	clearCurveSegmentsByIndex(index);
-	crv->isSpline = TRUE;
-	crv->knotNum = crv->pointNum * 2;
-	for (int i = 0; i < crv->pointNum; i++) {
-		crv->knotVec[i] = 0;
-		crv->knotVec[i + crv->pointNum] = 1.0;
-	}
-	createCurveFromIndex(index);
-}
 
 void dragCurve(int x, int y, PVOID userData) {
 	printf("%d, %d\n", x, y);
@@ -341,10 +347,163 @@ void dragWeight(int x, int y, PVOID userData) {
 	createCurveFromIndex(activeIndex);
 }
 
+void dragKnot(int x, int y, PVOID userData) {
+	/*
+	msg_idx = j;
+					helper[1].x = helper[0].x;
+					helper[1].y = helper[0].y;
+	*/
+	CAGD_POINT t[2];
+	cagdToObject(x, y, t);
+	
+	double newX = t[0].x;
+	double newY = t[0].y;
+	int knotIDX = getKnotIndexFromBreakpointIndex(msg_idx);
+	double newKnotValue = getKnotValueFromCAGDXPosition(newX, curveArray[activeIndex]->knotVec[0], curveArray[activeIndex]->knotVec[curveArray[activeIndex]->knotNum - 1]);
+	//printf("msg idx = %d, knotIdx = %d, newKnotValue = %lf\n", msg_idx, knotIDX, newKnotValue);
+	if (knotIDX != 0 && knotIDX != curveArray[activeIndex]->knotNum - 1) {
+		removeKnot(activeIndex, knotIDX);
+		knotIDX = insertKnot(activeIndex, newKnotValue);
+		msg_idx = getBreakPointIndexFromKnotIndex(curveArray[activeIndex], knotIDX);
+		createCurveFromIndex(activeIndex);
+	}
+	showKnotDisplay(activeIndex);
+
+}
+
 void quitDrag(int x, int y, PVOID useData) {
 	cagdRegisterCallback(CAGD_MOUSEMOVE, NULL, NULL);
 	helper[0].x = helper[0].y = helper[0].z = helper[1].x = helper[1].y = helper[1].z = 0.0;
 }
+
+
+CLICK_TYPE getClickType(int x, int y) {
+	UINT picked;
+	CAGD_POINT helper2;
+	for (int i = 0; i < MAX_CURVES; i++) {
+		if (curveArray[i] != NULL) {
+			int n = curveArray[i]->pointNum;
+			cagdPick(x, y);
+			picked = cagdPickNext();
+			while (picked) {
+				for (int j = 0; j < n; j++) {
+					cagdToObject(x, y, helper);
+					cagdGetSegmentLocation(curveArray[i]->pointDisp[j], &helper2);
+					//printf("(%lf, %lf)  |  (%lf, %lf)\n", helper[0].x, helper[0].y, helper2.x, helper2.y);
+					if (curveArray[i]->pointDisp[j] == picked) {
+						printf("clicked on a control point!\n");
+						activeIndex = i;
+						msg_idx = j;
+						helper[1].x = helper[0].x;
+						helper[1].y = helper[0].y;
+						return CLICK_CONTROLPOINT;
+					}
+				}
+				picked = cagdPickNext();
+			}
+			cagdPick(x, y);
+			picked = cagdPickNext();
+			cagdToObject(x, y, helper);
+			for (int j = 0; j < n; j++) {
+				if (curveArray[i]->weightVec[j] == picked) {
+					printf("clicked on a weight circle!\n");
+					activeIndex = i;
+					msg_idx = j;
+					return CLICK_WEIGHT_CIRCLE;
+				}
+			}
+			// if polyline polygon or curve -> move control polygon
+			if (curveArray[i]->curvePolyline == picked) {
+				printf("clicked on a curve\n");
+				activeIndex = i;
+				helper[1].x = helper[0].x - curveArray[activeIndex]->pointVec[0].x;
+				helper[1].y = helper[0].y - curveArray[activeIndex]->pointVec[0].y;
+				return CLICK_CURVE;
+			}
+			if (curveArray[i]->polyVec == picked) {
+				// get polygon pointIndex (closest "before"?)
+				CAGD_POINT* tmp = (CAGD_POINT*)malloc(sizeof(CAGD_POINT) * curveArray[i]->pointNum);
+				cagdGetSegmentLocation(picked, tmp);
+				double proj_x, proj_y;
+				boolean found = FALSE;
+				double threshold = 1e-3; // square of tolerance
+				for (int j = 0; j < curveArray[i]->pointNum - 1; ++j) {
+					double ax = tmp[j].x, ay = tmp[j].y;
+					double bx = tmp[j + 1].x, by = tmp[j + 1].y;
+					double px = helper[0].x, py = helper[0].y;
+
+					double dx = bx - ax;
+					double dy = by - ay;
+					double len_sq = dx * dx + dy * dy;
+
+					double t = 0.0;
+					if (len_sq > 1e-12) {
+						t = ((px - ax) * dx + (py - ay) * dy) / len_sq;
+						if (t < 0) t = 0;
+						if (t > 1) t = 1;
+					}
+
+					proj_x = ax + t * dx;
+					proj_y = ay + t * dy;
+
+					double d2 = (px - proj_x) * (px - proj_x) + (py - proj_y) * (py - proj_y);
+					if (d2 < threshold) {
+						printf("Picked segment [%d - %d]\n", j, j + 1);
+						msg_idx = j;
+						found = TRUE;
+						break;
+					}
+				}
+				activeIndex = i;
+				helper[1].x = helper[0].x - curveArray[activeIndex]->pointVec[0].x;
+				helper[1].y = helper[0].y - curveArray[activeIndex]->pointVec[0].y;
+				helper[1].z = 0;
+				free(tmp);
+				if (found) {
+					helper[0].x = proj_x;
+					helper[0].y = proj_y;
+				}
+				helper[0].z = 0;
+				return CLICK_POLYGON;
+			}
+		}
+	}
+
+	if (KV.index != NO_INDEX) {
+		cagdPick(x, y);
+		picked = cagdPickNext();
+		while (picked) {
+			for (int j = 0; j < KV.breakpoints_num; j++) {
+				cagdToObject(x, y, helper);
+				//printf("(%lf, %lf)  |  (%lf, %lf)\n", helper[0].x, helper[0].y, helper2.x, helper2.y);
+				if (KV.knotTriangle[j] == picked) {
+					printf("clicked on a knot! point!\n");
+					helper[1].x = helper[0].x;
+					helper[1].y = helper[0].y;
+					msg_idx = j;
+					return CLICK_KNOT;
+				}
+			}
+			picked = cagdPickNext();
+		}
+		cagdPick(x, y);
+		picked = cagdPickNext();
+		while (picked) {
+			cagdToObject(x, y, helper);
+			if (KV.line == picked) {
+				printf("clicked on a Knot line!\n");
+				helper[1].x = helper[0].x;
+				helper[1].y = helper[1].y;
+				return CLICK_KNOTLINE;
+			}
+			picked = cagdPickNext();
+		}
+		
+	}
+	printf("Didn't find anything here...\n");
+	return CLICK_NONE;
+}
+
 
 void defaultLeftClick(int x, int y, PVOID userData) {
 	/*if on control polygon or curve:
@@ -353,98 +512,49 @@ void defaultLeftClick(int x, int y, PVOID userData) {
 		modify weight of control point.
 	If on knot :
 		move knot*/
-	UINT picked;
-	boolean found = FALSE;
-	CAGD_POINT helper2;
 
-	for (int i = 0; i < MAX_CURVES; i++) {
-		if (found) {
-			break;
-		}
-		if (curveArray[i] != NULL) {
-			int n = curveArray[i]->pointNum;
-			cagdPick(x, y);
-			picked = cagdPickNext();
-			while (picked && !found) {
-				for (int j = 0; j < n; j++) {
-					cagdToObject(x, y, helper);
-					cagdGetSegmentLocation(curveArray[i]->pointDisp[j], &helper2);
-					//printf("(%lf, %lf)  |  (%lf, %lf)\n", helper[0].x, helper[0].y, helper2.x, helper2.y);
-					if (curveArray[i]->pointDisp[j] == picked) {
-						printf("clicked on a control point!\n");
-						activeIndex = i;
-						
-						helper[1].x = helper[0].x;
-						helper[1].y = helper[0].y;
-						cagdRegisterCallback(CAGD_MOUSEMOVE, dragControlPoint, msg_idx = j);
-						cagdRegisterCallback(CAGD_LBUTTONUP, quitDrag, NULL);
-						found = TRUE;
-						break;
-					}
-				}
-				picked = cagdPickNext();
-			}
-			cagdPick(x, y);
-			picked = cagdPickNext();
-			cagdToObject(x, y, helper);
-			if (!found) {
-				for (int j = 0; j < n; j++) {
-					if (curveArray[i]->weightVec[j] == picked) {
-						printf("clicked on a weight circle!\n");
-						found = TRUE;
-						
-						activeIndex = i;
-						cagdRegisterCallback(CAGD_MOUSEMOVE, dragWeight, msg_idx = j);
-						cagdRegisterCallback(CAGD_LBUTTONUP, quitDrag, NULL);
-						break;
-					}
-				}
-			}
-			// if polyline polygon or curve -> move control polygon
-			if (!found) {
-				if (curveArray[i]->curvePolyline == picked || curveArray[i]->polyVec == picked) {
-					printf("clicked on a curve or its control polygon\n");
-					activeIndex = i;
-					helper[1].x = helper[0].x - curveArray[activeIndex]->pointVec[0].x;
-					helper[1].y = helper[0].y - curveArray[activeIndex]->pointVec[0].y;
-					cagdRegisterCallback(CAGD_MOUSEMOVE, dragCurve, NULL);
-					cagdRegisterCallback(CAGD_LBUTTONUP, quitDrag, NULL);
-					found = TRUE;
-					break;
-				}
-			}
-
-		}
+	CLICK_TYPE clk = getClickType(x, y);
+	switch (clk) {
+	case CLICK_CONTROLPOINT:
+		printf("clicked on a control point!\n");
+		cagdRegisterCallback(CAGD_MOUSEMOVE, dragControlPoint,NULL);
+		cagdRegisterCallback(CAGD_LBUTTONUP, quitDrag, NULL);
+		break;
+	case CLICK_WEIGHT_CIRCLE:
+		printf("clicked on a weight circle!\n");
+		cagdRegisterCallback(CAGD_MOUSEMOVE, dragWeight, NULL);
+		cagdRegisterCallback(CAGD_LBUTTONUP, quitDrag, NULL);
+		break;
+	case CLICK_CURVE:
+	case CLICK_POLYGON:
+		printf("clicked on a curve or its control polygon\n");
+		cagdRegisterCallback(CAGD_MOUSEMOVE, dragCurve, NULL);
+		cagdRegisterCallback(CAGD_LBUTTONUP, quitDrag, NULL);
+		break;
+	case CLICK_KNOT:
+		cagdRegisterCallback(CAGD_MOUSEMOVE, dragKnot, NULL);
+		cagdRegisterCallback(CAGD_LBUTTONUP, quitDrag, NULL);
+		break;
 	}
-	if (!found) {
-		printf("Didn't find anything here...\n");
-	}
+	return;
 }
 
 
-CAGD_CALLBACK myCommand(int id, int unused, PVOID userData) {
+void myCommand(int id, int unused, PVOID userData) {
 	int idx;
-	static state = M_DEFAULT;
-	HMENU hMenu = (HMENU)userData;
 	
-	if (id == state) {
-		// Toggle off
-		CheckMenuItem(hMenu, id, MF_UNCHECKED);
-		state = M_DEFAULT;
-		id = M_DEFAULT;
-	}
-	else {
-		// Switch to new item
-		CheckMenuItem(hMenu, state, MF_UNCHECKED);
-		CheckMenuItem(hMenu, id, MF_CHECKED);
-		state = id;
-	}
+	HMENU hMenu = (HMENU)userData;
+	CheckMenuItem(hMenu, MY_CREATEBEZIER, MF_UNCHECKED);
+	CheckMenuItem(hMenu, MY_CREATEBSPLINE, MF_UNCHECKED);
+	UINT lastCheckVal = CheckMenuItem(hMenu, id, MF_CHECKED);
+	
 	cagdRegisterCallback(CAGD_TIMER, NULL, NULL);
 	cagdRegisterCallback(CAGD_LBUTTONDOWN, defaultLeftClick, NULL);
 	cagdRegisterCallback(CAGD_LBUTTONUP, NULL, NULL);
 	cagdSetColor(0, 0, 0);
 	switch (id) {
 	case MY_CREATEBEZIER:
+		
 		if (curveCount == MAX_CURVES) {
 			fprintf(stderr, "Too many curves on display! Please clear one before creating a new one!");
 		}
@@ -469,6 +579,7 @@ CAGD_CALLBACK myCommand(int id, int unused, PVOID userData) {
 		}
 		break;
 	case MY_CREATEBSPLINE:
+		
 		if (curveCount == MAX_CURVES) {
 			fprintf(stderr, "Too many curves on display! Please clear one before creating a new one!");
 		}
@@ -509,32 +620,236 @@ CAGD_CALLBACK myCommand(int id, int unused, PVOID userData) {
 		removeAllCurves();
 		break;
 	case MY_DRAW_CONTROLPOLYGONS:
+		if (lastCheckVal == MF_CHECKED) {
+			CheckMenuItem(hMenu, id, MF_UNCHECKED);
+		}
 		drawHideAllControlPolygons();
+		fprintf(stderr, "toggle control\n");
 		break;
 	case MY_DRAWHODOGRAPHS:
+		if (lastCheckVal == MF_CHECKED) {
+			CheckMenuItem(hMenu, id, MF_UNCHECKED);
+		}
 		drawHideAllHodographs();
+		fprintf(stderr, "toggle hodo\n");
 		break;
 	case MY_DRAW_WEIGHTS:
+		if (lastCheckVal == MF_CHECKED) {
+			CheckMenuItem(hMenu, id, MF_UNCHECKED);
+		}
 		drawHideAllWeightVec();
+		fprintf(stderr, "toggle weight\n");
 		break;
 	case M_PROPERTIES:
+		CheckMenuItem(hMenu, id, MF_UNCHECKED);
+		int newOrder;
+		double newStep;
+		if (DialogBox(cagdGetModule(),
+			MAKEINTRESOURCE(IDD_EDIT_PARAMS),
+			cagdGetWindow(),
+			(DLGPROC)myDialogProc)) {
+			if (sscanf(orderBuffer, "%d", &newOrder) == 1) {
+				defaultDegree = newOrder - 1;
+			}
+			else
+				myMessage("Bad Params", "Order must be an integer!", MB_ICONERROR);
+			if(sscanf(sizeBuffer, "%lf", &newStep) == 1) {
+				stepSize = newStep;
+			}
+			else
+				myMessage("Bad Params", "Step size must be a real number!", MB_ICONERROR);
+		}
 		break;
 	case M_DEFAULT:
 		break;
 	}
-	
-	
 	cagdRedraw();
 }
 
+void insertPoint(int x, int y, PVOID userData) {
+	insertPointInLocation(activeIndex, msg_idx, helper[0]);
+	cagdRedraw();
+	cagdRegisterCallback(CAGD_LBUTTONDOWN, defaultLeftClick, NULL);
+}
 
+void removePoint(int x, int y, PVOID userData) {
+	removePointInIndex(activeIndex, msg_idx);
+	cagdRedraw();
+	cagdRegisterCallback(CAGD_LBUTTONDOWN, defaultLeftClick, NULL);
 
+}
+
+void appendPoint(int x, int y, PVOID userData) {
+	CAGD_POINT t[2];
+	cagdToObject(x, y, t);
+	appendControlPoint(activeIndex, t[1]);
+	cagdRedraw();
+}
+
+void prependPoint(int x, int y, PVOID userData) {
+	CAGD_POINT t[2];
+	cagdToObject(x, y, t);
+	prependControlPoint(activeIndex, t[1]);
+	cagdRedraw();
+}
+
+void myClickCommand(int id, int unused, PVOID userData) {
+	int idx;
+
+	cagdRegisterCallback(CAGD_TIMER, NULL, NULL);
+	cagdRegisterCallback(CAGD_LBUTTONDOWN, defaultLeftClick, NULL);
+	cagdRegisterCallback(CAGD_LBUTTONUP, NULL, NULL);
+	cagdSetColor(0, 0, 0);
+	switch (id) {
+	case MY_REMOVEPOINT:{
+		cagdRegisterCallback(CAGD_LBUTTONDOWN, removePoint, NULL);
+		break;
+	}
+	case MY_INSERTPOINT:{
+		cagdRegisterCallback(CAGD_LBUTTONDOWN, insertPoint, NULL);
+		break;
+	}
+	case MY_APPENDPOINT:{
+		cagdRegisterCallback(CAGD_LBUTTONDOWN, appendPoint, NULL);
+		break;
+	}
+	case MY_PREPENDPOINT: {
+		cagdRegisterCallback(CAGD_LBUTTONDOWN, prependPoint, NULL);
+		break;
+	}
+	case MY_DRAWCONTROLPOLYGONINDEX: {
+		curveArray[activeIndex]->s.controlPolygon = !(curveArray[activeIndex]->s.controlPolygon);
+		hide_show_by_disp_state(activeIndex);
+		break;
+	}
+	case MY_DRAWHODOGRAPHINDEX: {
+		curveArray[activeIndex]->s.hodograph = !(curveArray[activeIndex]->s.hodograph);
+		hide_show_by_disp_state(activeIndex);
+		break;
+	}
+	case MY_DRAWWEIGHTINDEX: {
+		curveArray[activeIndex]->s.weightVectors = !(curveArray[activeIndex]->s.weightVectors);
+		hide_show_by_disp_state(activeIndex);
+		break;
+	}
+	case MY_BSPLINEFLOAT: {
+		BsplineFloating(activeIndex);
+		break;
+	}
+	case MY_BSPLINECLAMPED: {
+		BsplineClamped(activeIndex);
+		break;
+	}
+	case MY_BEZIERTOBSPLINE: {
+		createBsplineFromBezier(activeIndex);
+		break;
+	}
+	case MY_VIEWKNOTS: {
+		showKnotDisplay(activeIndex);
+		break;
+	}
+	case MY_HIDEKNOTS: {
+		hideKnotDisplay(NO_CURVE);
+		break;
+	}
+	case MY_INSERTKNOT: {
+		double knotVal = getKnotValueFromCAGDXPosition(helper[0].x, curveArray[activeIndex]->knotVec[0], curveArray[activeIndex]->knotVec[curveArray[activeIndex]->knotNum - 1]);
+		insertKnot(activeIndex, knotVal);
+		createCurveFromIndex(activeIndex);
+		showKnotDisplay(activeIndex);
+		break;
+	}
+	case MY_REMOVEKNOT: {
+		removeKnot(activeIndex, msg_idx);
+		createCurveFromIndex(activeIndex);
+		showKnotDisplay(activeIndex);
+		break;
+	}
+	case MY_CLEARCURVE: {
+		removeCurveFromIndex(activeIndex);
+		hideKnotDisplay(activeIndex);
+		break;
+	}
+	case MY_MODIFYCOLOR: {
+		CHOOSECOLOR cc = { 0 };
+		COLORREF customColors[16] = { 0 };
+		cc.lStructSize = sizeof(cc);
+		cc.Flags = CC_RGBINIT | CC_FULLOPEN;
+		cc.lpCustColors = customColors;
+		cc.rgbResult = RGB(0, 0, 0); // default
+
+		if (ChooseColor(&cc)) {
+			unsigned char colors[4];
+			*(DWORD*)colors = cc.rgbResult;
+			setCurveColor(activeIndex, colors[0], colors[1], colors[2]);
+		}
+		break;
+	}
+	}
+	cagdRedraw();
+}
 
 void openRightMenu(int x, int y, PVOID userData) {
-	WORD l = cagdPostMenu(userData, x, y);
-	if (l) {
-		myCommand(l, 0, userData);
+	
+	CLICK_TYPE clk = getClickType(x, y);
+	WORD menu_cmd;
+	CURVE_STRUCT * crv = curveArray[activeIndex];
+	HMENU contextMenu = CreatePopupMenu();
+	switch (clk) {
+	case CLICK_NONE:
+		menu_cmd = cagdPostMenu(hMenu, x, y);
+		myCommand(menu_cmd, 0, hMenu);
+		break;
+	case CLICK_CONTROLPOINT:
+		AppendMenu(contextMenu, MF_STRING, MY_REMOVEPOINT, "Remove Control Point");
+	case CLICK_POLYGON:
+		if (clk != CLICK_CONTROLPOINT) {
+			AppendMenu(contextMenu, MF_STRING, MY_INSERTPOINT, "Insert Control Point");
+		}
+	case CLICK_CURVE:
+	{
+		AppendMenu(contextMenu, MF_STRING, MY_APPENDPOINT, "Append Control Point");
+		AppendMenu(contextMenu, MF_STRING, MY_PREPENDPOINT, "Prepend Control Point");
+		AppendMenu(contextMenu, MF_SEPARATOR, 0, NULL);
+		AppendMenu(contextMenu, MF_STRING, MY_DRAWCONTROLPOLYGONINDEX, "Draw Control Polygon");
+		AppendMenu(contextMenu, MF_STRING, MY_DRAWWEIGHTINDEX, "Draw Weight Circles");
+		AppendMenu(contextMenu, MF_STRING, MY_DRAWHODOGRAPHINDEX, "Draw Hodograph");
+		AppendMenu(contextMenu, MF_SEPARATOR, 0, NULL);
+		if (crv->isSpline) {
+			AppendMenu(contextMenu, MF_STRING, MY_BSPLINEFLOAT, "Change B-Spline to Floating End");
+			AppendMenu(contextMenu, MF_STRING, MY_BSPLINECLAMPED, "Change B-Spline to Open End");
+			AppendMenu(contextMenu, MF_STRING, MY_VIEWKNOTS, "View Knots");
+			if (crv->splineType == BSPLINE_FLOATING) {
+				EnableMenuItem(contextMenu, MY_BSPLINEFLOAT, MF_GRAYED);
+			}
+			else if (crv->splineType == BSPLINE_CLAMPED) {
+				EnableMenuItem(contextMenu, MY_BSPLINECLAMPED, MF_GRAYED);
+			}
+		}
+		else {
+			AppendMenu(contextMenu, MF_STRING, MY_BEZIERTOBSPLINE, "Transform Bezier to Bspline");
+		}
+		AppendMenu(contextMenu, MF_SEPARATOR, 0, NULL);
+		AppendMenu(contextMenu, MF_STRING, MY_MODIFYCOLOR, "Change curve color");
+		AppendMenu(contextMenu, MF_SEPARATOR, 0, NULL);
+		AppendMenu(contextMenu, MF_STRING, MY_CLEARCURVE, "Clear Curve");
+		break;
 	}
+	case CLICK_KNOT:
+		AppendMenu(contextMenu, MF_STRING, MY_REMOVEKNOT, "Remove Knot");
+	case CLICK_KNOTLINE: {
+		AppendMenu(contextMenu, MF_STRING, MY_INSERTKNOT, "Insert Knot");
+		AppendMenu(contextMenu, MF_STRING, MY_HIDEKNOTS, "Hide Knots");
+	}
+	
+	}
+	cagdRegisterCallback(CAGD_CLICKMENU, myClickCommand, (PVOID)contextMenu);
+	WORD l = cagdPostMenu(contextMenu, x, y);
+	if (l) {
+		myClickCommand(l, 0, userData);
+	}
+	
+	DestroyMenu(contextMenu);
 }
 
 void initializeGlobals() {
@@ -550,13 +865,23 @@ void initializeGlobals() {
 	default_ds.controlPolygon = TRUE;
 	default_ds.hodograph = FALSE;
 	default_ds.weightVectors = FALSE;
+	default_ds.knotVector = FALSE;
+	default_ds.curveColor.red = default_ds.curveColor.green = default_ds.curveColor.blue = 0;
+	KV.index = NO_INDEX;
+	KV.knotTriangle = NULL;
+	KV.line = NO_CURVE;
+	KV.multiplicity = NULL;
+	KV.breakpoints_num = 0;
+	KV.normalizedBreakPoints = NULL;
+
+	fprintf(stderr, "\033[0;31m");
 }
 
 int main(int argc, char *argv[])
 {
 	initializeGlobals();
 
-	HMENU hMenu, myPopup, connectMenu;
+	
 	cagdBegin("CAGD", 512, 512);
 
 	//connectMenu
@@ -580,11 +905,8 @@ int main(int argc, char *argv[])
 	cagdAppendMenu(hMenu, "Curves");
 
 	
-
+	
 	cagdRegisterCallback(CAGD_MENU, myCommand, (PVOID)hMenu);
-
-
-
 	cagdRegisterCallback(CAGD_LOADFILE, myRead, NULL);
 	cagdRegisterCallback(CAGD_SAVEFILE, mySave, NULL);
 	//cagdRegisterCallback(CAGD_RBUTTONUP, openRightMenu, hMenu);

@@ -473,7 +473,7 @@ void printCurve(int index) {
 	}
 	printf("pointNum = %d \n", curveArray[index]->pointNum);
 	for (int i = 0; i < curveArray[index]->pointNum; i++) {
-		printf("point[%d] = %lf \t %lf \t %lf\n", i, curveArray[index]->pointVec[i]);
+		printf("point[%d] = %lf \t %lf \t %lf\n", i, curveArray[index]->pointVec[i].x, curveArray[index]->pointVec[i].y, curveArray[index]->pointVec[i].z);
 	}
 
 }
@@ -483,20 +483,23 @@ void createcurvePolyline(int index) {
 		printf("unexpected error");
 		return;
 	}
-	printCurve(index);
-	UINT polyID;
+	//printCurve(index);
 
 	if (curveArray[index]->pointNum == 1) {
 		return;
 	}
 	//BSPLINE check order!!!!
 	if (curveArray[index]->isSpline) {
-		// bspline with n+1 control points, m+1 knots and degree p
 		if (curveArray[index]->pointNum < curveArray[index]->order) {
-			printf("Cannot display B-Spline curve. Please add %d more points to satisfy #control points >= degree. The degree is %d. You may adjust this in Curves->Properties.\n", defaultDegree - curveArray[index]->pointNum, defaultDegree);
+			fprintf(stderr, "Not enough points to display a curve yet\n");
+			return;
+		}
+		if ((curveArray[index]->pointNum  + curveArray[index]->order) != curveArray[index]->knotNum) {
+			fprintf(stderr, "Cannot display B-Spline curve. Please ensure your curve satisfies #knot = #control points + order. Your curve: #knot = %d, #control points = %d, #order = %d,", curveArray[index]->knotNum, curveArray[index]->pointNum , curveArray[index]->order );
 			curveArray[index]->curvePolyline = NO_CURVE;
 			return;
 		}
+		curveArray[index]->splineType = getBsplineT(curveArray[index]->order, curveArray[index]->knotVec, curveArray[index]->knotNum);
 		int degree = curveArray[index]->order - 1;
 		double domain_min = curveArray[index]->knotVec[degree];
 		double domain_max = curveArray[index]->knotVec[curveArray[index]->knotNum - degree - 1];
@@ -548,7 +551,7 @@ void createcurvePolyline(int index) {
 		free(hodovec);
 		free(vec);
 	}
-	printCurve(index);
+	//printCurve(index);
 }
 
 void createWeightCircles(int index) {
@@ -592,12 +595,208 @@ UINT createControlPolygon(int index) {
 	return res;
 }
 
-createCurveFromIndex(int index) {
+void createCurveFromIndex(int index) {
 	clearCurveSegmentsByIndex(index);
 	createcurvePolyline(index);
 	createWeightCircles(index);
 	createControlPolygon(index);
 	hide_show_by_disp_state(index);
-	cagdRedraw();
+	if (KV.index == index) {
+		showKnotDisplay(index);
+	}
+}
+
+BsplineType getBsplineT(int order, double* knotVector, int numKnots) {
+	BsplineType bsplineT = BSPLINE_UNKNOWN;
+	boolean isClamped = TRUE;
+	for (int i = 1; i <= order - 1; i++) {
+		if (knotVector[i] != knotVector[0] || knotVector[numKnots - 1 - i] != knotVector[numKnots - 1]) {
+			isClamped = FALSE;
+			break;
+		}
+	}
+	if (isClamped) {
+		bsplineT = BSPLINE_CLAMPED;
+	}
+	else {
+		double delta = knotVector[1] - knotVector[0];
+		boolean isUniform = TRUE;
+		for (int i = 2; i <= numKnots - 1; i++) {
+			if (fabs(knotVector[i] - knotVector[i - 1] - delta) > MY_ZERO) {
+				isUniform = FALSE;
+				break;
+			}
+		}
+		if (isUniform) {
+			bsplineT = BSPLINE_FLOATING;
+		}
+	}
+	return bsplineT;
+}
+
+void BsplineFloating(int index) {
+	CURVE_STRUCT *crv = curveArray[index];
+	int n = crv->pointNum - 1; 
+	int ord = crv->order;
+	int knotNum = n + ord + 1;
+
+	crv->knotVec = (double*)realloc(crv->knotVec,(sizeof(double)* knotNum));
+	crv->knotNum = knotNum;
+	crv->splineType = BSPLINE_FLOATING;
+
+	// Uniform spacing
+	for (int i = 0; i < knotNum; i++) {
+		crv->knotVec[i] = (double)i;
+	}
+	createCurveFromIndex(index);
+}
+
+void  BsplineClamped(int index) {
+	CURVE_STRUCT *crv = curveArray[index];
+	int n = crv->pointNum - 1;
+	int ord = crv->order;
+	int knotNum = n + ord + 1;
+
+	crv->knotVec = (double*)realloc(crv->knotVec,(sizeof(double)* knotNum));
+	crv->knotNum = knotNum;
+	crv->splineType = BSPLINE_CLAMPED;
+
+	// Uniform spacing
+	for (int i = 0; i < knotNum; i++) {
+		if (i < ord) crv->knotVec[i] = 0;
+		else if (i > n) crv->knotVec[i] = 1;
+		else crv->knotVec[i] = (double)(i - ord + 1) / (n - ord + 2);
+	}
+	createCurveFromIndex(index);
+
+}
+
+void removePointInIndex(int index, int pointIndex) {
+	CURVE_STRUCT *crv = curveArray[index];
+	clearCurveSegmentsByIndex(index);
+	int n = crv->pointNum;
+	CAGD_POINT* newPointVector = (CAGD_POINT*)malloc(sizeof(CAGD_POINT)*(n - 1));
+	CAGD_POINT* pointVector = crv->pointVec;
+
+	memcpy(newPointVector, pointVector, sizeof(CAGD_POINT) * (pointIndex));
+	memcpy(newPointVector + pointIndex, pointVector + (pointIndex + 1), sizeof(CAGD_POINT) * (n - pointIndex - 1));
+	free(pointVector);
+	pointVector = NULL;
+	crv->pointVec = newPointVector;
+	crv->pointNum = n - 1;
+
+	if (crv->isSpline) {
+		if (crv->splineType == BSPLINE_CLAMPED) {
+			BsplineClamped(index);
+		}
+		else if (crv->splineType == BSPLINE_FLOATING) {
+			BsplineFloating(index);
+		}
+	}
+	createCurveFromIndex(index);
+}
+
+void insertPointInLocation(int index, int previousPointIndex, CAGD_POINT newPoint) {
+	CURVE_STRUCT *crv = curveArray[index];
+	clearCurveSegmentsByIndex(index);
+	int n = crv->pointNum;
+	CAGD_POINT* newPointVector = (CAGD_POINT*)malloc(sizeof(CAGD_POINT)*(n + 1));
+	CAGD_POINT* pointVector = crv->pointVec;
+	if (previousPointIndex == -1) {
+		newPointVector[0] = newPoint;
+		memcpy(newPointVector + (previousPointIndex + 2), pointVector + (previousPointIndex + 1), sizeof(CAGD_POINT) * (n - previousPointIndex - 1));
+	}
+	memcpy(newPointVector, pointVector, sizeof(CAGD_POINT) * (previousPointIndex + 1));
+	newPointVector[previousPointIndex + 1] = newPoint;
+	memcpy(newPointVector + (previousPointIndex + 2), pointVector + (previousPointIndex + 1), sizeof(CAGD_POINT) * (n - previousPointIndex - 1));
+
+	free(pointVector);
+	pointVector = NULL;
+	crv->pointVec = newPointVector;
+	crv->pointNum = n + 1;
+
+	if (crv->isSpline) {
+		if (crv->splineType == BSPLINE_CLAMPED) {
+			BsplineClamped(index);
+		}
+		else if (crv->splineType == BSPLINE_FLOATING) {
+			BsplineFloating(index);
+		}
+	}
+	createCurveFromIndex(index);
+}
+
+void appendControlPoint(int index, CAGD_POINT newPoint) {
+	insertPointInLocation(index, curveArray[index]->pointNum - 1, newPoint);
+}
+
+void prependControlPoint(int index, CAGD_POINT newPoint) {
+	insertPointInLocation(index,  - 1, newPoint);
+}
+
+void createBsplineFromBezier(int index) {
+	CURVE_STRUCT *crv = curveArray[index];
+	if (crv->isSpline) {
+		fprintf(stdout, "This curve is already a bspline!\n");
+		return;
+	}
+	clearCurveSegmentsByIndex(index);
+	crv->isSpline = TRUE;
+	crv->order = crv->order + 1;
+	crv->splineType = BSPLINE_UNKNOWN;
+	crv->knotNum = crv->pointNum + crv->order;
+	crv->knotVec = (double*)malloc(sizeof(double) * crv->knotNum);
+
+	for (int i = 0; i < crv->pointNum; i++) {
+		crv->knotVec[i] = 0;
+		crv->knotVec[crv->knotNum - i - 1] = 1.0;
+	}
+	createCurveFromIndex(index);
+}
+
+int insertKnot(int index, double knotValue) {
+	CURVE_STRUCT *crv = curveArray[index];
+	clearCurveSegmentsByIndex(index);
+	int knotN = crv->knotNum;
+	double* newKnotVector = (double*)malloc(sizeof(double)*(knotN + 1));
+	double* knotVector = crv->knotVec;
+	// [ 0, 1, 2, 3, 4] (2)
+	// in di + 1 (di == 2)
+	// copy di+1 first?
+	// (5)
+	// di == 4 -> di+1 == 5 
+	int di = 0;
+	for (; di < knotN - 1; di++) {
+		if (knotValue >= knotVector[di]) {
+			if (knotValue < knotVector[di + 1]) {
+				break;
+			}
+		}
+	}
+	memcpy(newKnotVector, knotVector, sizeof(double) * (di + 1));
+	newKnotVector[di + 1] = knotValue;
+	memcpy(newKnotVector +  (di + 2), knotVector + (di + 1), sizeof(double) * (knotN - di - 1));
+	
+	free(knotVector);
+	knotVector = NULL;
+	crv->knotVec = newKnotVector;
+	crv->knotNum = knotN + 1;
+	return di + 1;
+}
+
+void removeKnot(int index, int knotIndex) {
+	CURVE_STRUCT *crv = curveArray[index];
+	clearCurveSegmentsByIndex(index);
+	int knotN = crv->knotNum;
+	double* newKnotVector = (double*)malloc(sizeof(double)*(knotN - 1));
+	double* knotVector = crv->knotVec;
+	
+	memcpy(newKnotVector, knotVector, sizeof(double) * (knotIndex));
+	memcpy(newKnotVector + knotIndex, knotVector + (knotIndex+1), sizeof(double) * (knotN - knotIndex - 1));
+
+	free(knotVector);
+	knotVector = NULL;
+	crv->knotVec = newKnotVector;
+	crv->knotNum = knotN -1 ;
 }
 

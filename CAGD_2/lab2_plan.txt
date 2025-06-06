@@ -77,7 +77,7 @@ CALLBACKS:
 		if on control point:
 			move control point
 		If on knot:
-			move knot
+			move knot (LOCKING)
 
 	void myRightClickInteraction(int x, int y, PVOID userData);
 		If on control polygon:
@@ -89,7 +89,11 @@ CALLBACKS:
 			Draw control polygon.
 			Remove curve.
 			Change Bspline end.
-			View knots.				
+			View knots.			
+		If on knot:
+			remove knot
+		If on knotline
+			insert knot
 		else popup of myMenu.
 
 	void myLeftClickInteraction(int x, int y, PVOID userData);
@@ -166,6 +170,14 @@ MODIFICATIONS:
 		based on x,y finds the new value of the knot.
 		removing the previous knot value (using it's location from cagdGetSegmentLocation) from the curve, adding in the new position.
 		cagdFreeSegment the curve and then createCurveFromIndex.
+
+	void addKnot():
+	open/ floating special case
+	
+
+	void removeKnot():
+	open / floating special case
+
 	
 CONTROL POLYGONS:
 
@@ -246,3 +258,9 @@ CREATE/REMOVE CURVE:
 		createCurveFromIndex.
 
 
+
+
+twilight
+psyduck
+hello kitty
+impossible stairs (suck up)

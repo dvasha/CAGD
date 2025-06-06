@@ -1,13 +1,6 @@
 ﻿  demo.c
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(191): warning C4101: 'b': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(191): warning C4101: 'g': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(191): warning C4101: 'r': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(379): warning C4022: 'cagdRegisterCallback': pointer mismatch for actual parameter 3
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(397): warning C4022: 'cagdRegisterCallback': pointer mismatch for actual parameter 3
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(573): warning C4047: 'function': 'UINT_PTR' differs in levels of indirection from 'HMENU'
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(573): warning C4024: 'AppendMenuA': different types for formal and actual parameter 3
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(584): warning C4047: 'function': 'CAGD_CALLBACK' differs in levels of indirection from 'CAGD_CALLBACK (__cdecl *)(int,int,PVOID)'
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(584): warning C4024: 'cagdRegisterCallback': different types for formal and actual parameter 2
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(559): warning C4101: 'myPopup': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(528): warning C4716: 'myCommand': must return a value
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(784): warning C4013: 'setCurveColor' undefined; assuming extern returning int
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(697): warning C4101: 'idx': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(898): warning C4047: 'function': 'UINT_PTR' differs in levels of indirection from 'HMENU'
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(898): warning C4024: 'AppendMenuA': different types for formal and actual parameter 3
   demo.vcxproj -> C:\Users\DVASH\OneDrive - Technion\Spring25\CAGD\CAGD\CAGD_2\SkeletonC2017\demo\.\Debug\demo.exe

@@ -1,5 +1,6 @@
 // IO
 #include "structures.h"
+#include "calculations.h"
 
 void myRead(int x, int y, PVOID userData) {
 	boolean isBspline = FALSE;
@@ -58,29 +59,9 @@ void myRead(int x, int y, PVOID userData) {
 							fgets(myBuffer, 1024, fptr); //newline
 							offset = 0;
 						}
-						boolean isClamped = TRUE;
-						for (int i = 1; i <= order - 1; i++) {
-							if (knotVector[i] != knotVector[0] || knotVector[numKnots - 1 - i] != knotVector[numKnots - 1]) {
-								isClamped = FALSE;
-								break;
-							}
-						}
-						if (isClamped) {
-							bsplineT = BSPLINE_CLAMPED;
-						}
-						else {
-							double delta = knotVector[1] - knotVector[0];
-							boolean isUniform = TRUE;
-							for (int i = 2; i <= numKnots - 1; i++) {
-								if (fabs(knotVector[i] - knotVector[i - 1] - delta) > MY_ZERO) {
-									isUniform = FALSE;
-									break;
-								}
-							}
-							if (isUniform) {
-								bsplineT = BSPLINE_FLOATING;
-							}
-						}
+
+						bsplineT = getBsplineT(order, knotVector, numKnots);
+
 					}
 					if (isBspline) {
 						numPts = numKnots - order;
@@ -130,6 +111,7 @@ void myRead(int x, int y, PVOID userData) {
 		}
 		fclose(fptr);
 	}
+	cagdRedraw();
 }
 
 void mySave(int x, int y, PVOID userData) {

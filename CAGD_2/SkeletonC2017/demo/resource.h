@@ -6,11 +6,7 @@
 #define IDI_ICON1                       103
 #define IDC_EDIT                        1005
 #define IDD_EDIT_PARAMS                 1006
-#define IDC_EDIT_X                      1007
-#define IDC_EDIT_Y                      1008
-#define IDC_EDIT_Z                      1009
-#define IDC_EDIT_MIN                    1010
-#define IDC_EDIT_MAX                    1011
+#define IDC_EDIT_ORDER                  1011
 #define IDC_EDIT_SSIZE                  1012
 
 // Next default values for new objects

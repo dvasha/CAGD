@@ -1,6 +1,7 @@
 #ifndef CALCULATIONS_H
 #define CALCULATIONS_H
 #include "structures.h"
+#include "togglers.h"
 #include <cagd.h>
 
 
@@ -40,6 +41,27 @@ void createWeightCircles(int index);
 
 UINT createControlPolygon(int index);
 
-createCurveFromIndex(int index);
+void createCurveFromIndex(int index);
+
+BsplineType getBsplineT(int order, double* knotVector, int numKnots);
+
+void removePointInIndex(int index, int pointindex);
+
+void insertPointInLocation(int index, int previousPointIndex, CAGD_POINT newPoint);
+
+void appendControlPoint(int index, CAGD_POINT newPoint);
+
+void prependControlPoint(int index, CAGD_POINT newPoint);
+
+void createBsplineFromBezier(int index);
+
+void BsplineFloating(int index);
+
+void  BsplineClamped(int index);
+
+int insertKnot(int index, double knotValue);
+
+void removeKnot(int index, int knotIndex);
+
 
 #endif
