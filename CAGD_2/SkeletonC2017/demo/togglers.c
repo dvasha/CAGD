@@ -351,15 +351,21 @@ double getKnotValueFromCAGDXPosition(double x, double knotMin, double knotMax) {
 	// Optional clamp
 	if (t < 0) t = 0;
 	if (t > 1) t = 1;
-	double knotValue = t * (knotMax - knotMin) + knotMin;
-	double threshold = WIDTH_SENSITIVITY * (normMax - normMin);
+	CAGD_POINT linewidth[5];
+	cagdGetSegmentLocation(KV.line, linewidth);
+	double threshold = WIDTH_SENSITIVITY * fabs(linewidth[0].x - linewidth[1].x);
+	printf("\n\n\n\n%lf\n", threshold);
 	for (int i = 0; i < KV.breakpoints_num; i++) {
 		double existing = KV.normalizedBreakPoints[i];
-		if (fabs(knotValue - existing) <= threshold) {
-			knotValue = existing;
-			break; // lock to the first close knot
+		if (fabs(x - existing) <= threshold) {
+			x = existing;
+			break;
 		}
 	}
+
+	// Map snapped x to knotValue
+	t = (x - normMin) / (normMax - normMin);
+	double knotValue = t * (knotMax - knotMin) + knotMin;
 	return knotValue;
 	
 }

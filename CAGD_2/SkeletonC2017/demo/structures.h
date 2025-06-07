@@ -124,8 +124,12 @@ int defaultDegree;
 int indicesToConnect[2];
 CAGD_POINT helper[2];
 int msg_idx;
+double msg_t;
 DISPLAY_STATUS default_ds;
 knotVisualizer KV;
+UINT crvpt, hodopt;
+int timeout;
+boolean displayHodographFlag;
 
 
 HMENU hMenu,  connectMenu;

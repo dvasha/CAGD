@@ -3,7 +3,7 @@
 
 #define PADDING_X 20
 #define PADDING_Y 5
-#define WIDTH_SENSITIVITY 0.08
+#define WIDTH_SENSITIVITY 0.01
 void showHodographofCurve(int index);
 void hideHodographofCurve(int index);
 void drawHideAllHodographs();
