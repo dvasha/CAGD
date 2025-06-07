@@ -480,7 +480,7 @@ void printCurve(int index) {
 
 void createcurvePolyline(int index) {
 	if (curveArray[index] == NULL) {
-		printf("unexpected error");
+		fprintf(stderr, "\[\033[0;31m\]unexpected error");
 		return;
 	}
 	//printCurve(index);
@@ -491,11 +491,11 @@ void createcurvePolyline(int index) {
 	//BSPLINE check order!!!!
 	if (curveArray[index]->isSpline) {
 		if (curveArray[index]->pointNum < curveArray[index]->order) {
-			fprintf(stderr, "Not enough points to display a curve yet\n");
+			fprintf(stderr, "\[\033[0;31m\]Not enough points to display a curve yet\n");
 			return;
 		}
 		if ((curveArray[index]->pointNum  + curveArray[index]->order) != curveArray[index]->knotNum) {
-			fprintf(stderr, "Cannot display B-Spline curve. Please ensure your curve satisfies #knot = #control points + order. Your curve: #knot = %d, #control points = %d, #order = %d,", curveArray[index]->knotNum, curveArray[index]->pointNum , curveArray[index]->order );
+			fprintf(stderr, "\[\033[0;31m\]Cannot display B-Spline curve. Please ensure your curve satisfies #knot = #control points + order. Your curve: #knot = %d, #control points = %d, #order = %d,", curveArray[index]->knotNum, curveArray[index]->pointNum , curveArray[index]->order );
 			curveArray[index]->curvePolyline = NO_CURVE;
 			return;
 		}
@@ -577,6 +577,9 @@ UINT createControlPolygon(int index) {
 	CAGD_POINT * tmp = (CAGD_POINT*)malloc(sizeof(CAGD_POINT) * curveArray[index]->pointNum);
 	UINT * ct = (UINT*)malloc(sizeof(UINT) * curveArray[index]->pointNum);
 	cagdSetColor(255, 0, 0);
+	printf("createcontrolpolygon\n");
+	printCurve(index);
+
 	for (int i = 0; i < curveArray[index]->pointNum; i++) {
 		tmp[i].x = curveArray[index]->pointVec[i].x / curveArray[index]->pointVec[i].z;
 		tmp[i].y = curveArray[index]->pointVec[i].y / curveArray[index]->pointVec[i].z;
@@ -693,10 +696,15 @@ void removePointInIndex(int index, int pointIndex) {
 			BsplineFloating(index);
 		}
 	}
+	else {
+		crv->order--;
+	}
 	createCurveFromIndex(index);
 }
 
 void insertPointInLocation(int index, int previousPointIndex, CAGD_POINT newPoint) {
+	newPoint.z = 1.0;
+	printCurve(index);
 	CURVE_STRUCT *crv = curveArray[index];
 	clearCurveSegmentsByIndex(index);
 	int n = crv->pointNum;
@@ -704,12 +712,15 @@ void insertPointInLocation(int index, int previousPointIndex, CAGD_POINT newPoin
 	CAGD_POINT* pointVector = crv->pointVec;
 	if (previousPointIndex == -1) {
 		newPointVector[0] = newPoint;
-		memcpy(newPointVector + (previousPointIndex + 2), pointVector + (previousPointIndex + 1), sizeof(CAGD_POINT) * (n - previousPointIndex - 1));
+		memcpy(newPointVector + 1, pointVector, sizeof(CAGD_POINT) * n);
 	}
-	memcpy(newPointVector, pointVector, sizeof(CAGD_POINT) * (previousPointIndex + 1));
-	newPointVector[previousPointIndex + 1] = newPoint;
-	memcpy(newPointVector + (previousPointIndex + 2), pointVector + (previousPointIndex + 1), sizeof(CAGD_POINT) * (n - previousPointIndex - 1));
+	else {
+		memcpy(newPointVector, pointVector, sizeof(CAGD_POINT) * (previousPointIndex + 1));
+		newPointVector[previousPointIndex + 1] = newPoint;
+		memcpy(newPointVector + (previousPointIndex + 2), pointVector + (previousPointIndex + 1), sizeof(CAGD_POINT) * (n - previousPointIndex - 1));
 
+	}
+	
 	free(pointVector);
 	pointVector = NULL;
 	crv->pointVec = newPointVector;
@@ -723,7 +734,12 @@ void insertPointInLocation(int index, int previousPointIndex, CAGD_POINT newPoin
 			BsplineFloating(index);
 		}
 	}
+	else {
+		crv->order++;
+	}
 	createCurveFromIndex(index);
+	printCurve(index);
+
 }
 
 void appendControlPoint(int index, CAGD_POINT newPoint) {
@@ -737,7 +753,7 @@ void prependControlPoint(int index, CAGD_POINT newPoint) {
 void createBsplineFromBezier(int index) {
 	CURVE_STRUCT *crv = curveArray[index];
 	if (crv->isSpline) {
-		fprintf(stdout, "This curve is already a bspline!\n");
+		fprintf(stdout, "\[\033[0m\]This curve is already a bspline!\n");
 		return;
 	}
 	clearCurveSegmentsByIndex(index);

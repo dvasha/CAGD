@@ -175,7 +175,6 @@ void getWindowWidthHeight(int* width, int* height) {
 	*width = rect.right - rect.left;
 	*height = rect.bottom - rect.top;
 
-	printf("w = %d, \t h = %d \n", *width, *height);
 }
 
 static UINT createTriangleShapes(double normalized_start,double pad ,int multiplicity) {
@@ -200,8 +199,7 @@ static UINT createTriangleShapes(double normalized_start,double pad ,int multipl
 		tmp[i].x = normalized_start + step;
 		tmp[i].y = pad - step * (i / 2 + 1);
 		tmp[i].z = 0;
-		//printf("[i] = (%lf,%lf)\n", tmp[i].x, tmp[i].y);
-//		printf("[i+1] = (%lf,%lf)\n", tmp[i+1].x, tmp[i+1].y);
+		
 
 	}
 	tmp[n - 1] = tmp[0];
@@ -212,7 +210,7 @@ static UINT createTriangleShapes(double normalized_start,double pad ,int multipl
 
 void showKnotDisplay(int index) {
 	if (index < 0 || index >= MAX_CURVES || curveArray[index] == NULL || curveArray[index]->isSpline != TRUE) {
-		fprintf(stderr, "Not possible. How did you even get here?\n");
+		fprintf(stderr, "\[\033[0;31m\]Not possible. How did you even get here?\n");
 		return;
 	}
 	hideKnotDisplay(KV.index);
@@ -354,7 +352,6 @@ double getKnotValueFromCAGDXPosition(double x, double knotMin, double knotMax) {
 	CAGD_POINT linewidth[5];
 	cagdGetSegmentLocation(KV.line, linewidth);
 	double threshold = WIDTH_SENSITIVITY * fabs(linewidth[0].x - linewidth[1].x);
-	printf("\n\n\n\n%lf\n", threshold);
 	for (int i = 0; i < KV.breakpoints_num; i++) {
 		double existing = KV.normalizedBreakPoints[i];
 		if (fabs(x - existing) <= threshold) {

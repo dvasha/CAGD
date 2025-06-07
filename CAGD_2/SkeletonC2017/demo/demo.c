@@ -90,7 +90,6 @@ void rainbowify(BYTE* r, BYTE* g, BYTE* b) {
 }
 
 void addBezier(int x, int y, PVOID userData) {
-	//printf("Clicked on point (%d,%d) to add to the curve in index %d \n", x, y, activeIndex);
 	CAGD_POINT t[2];
 	cagdToObject(x, y, t);
 	CURVE_STRUCT *crv = curveArray[activeIndex];
@@ -121,7 +120,7 @@ void addBezier(int x, int y, PVOID userData) {
 		CAGD_POINT* tmp = (CAGD_POINT*)realloc(crv->pointVec, sizeof(CAGD_POINT) * crv->pointNum);
 		UINT* tmp2 = (UINT*)realloc(crv->weightVec, sizeof(UINT) * crv->pointNum);
 		if (tmp == NULL || tmp2 == NULL) {
-			fprintf(stderr, "UNEXPECTED MEMORY ERROR!\n");
+			fprintf(stderr, "\033[0;31m UNEXPECTED MEMORY ERROR!\n");
 			free(crv->pointVec);
 			free(crv->weightVec);
 			crv->pointNum--;
@@ -149,7 +148,7 @@ void addBezier(int x, int y, PVOID userData) {
 // so I need to add enough knots for it to make sense?
 // check for open/ flaoting
 void addBspline(int x, int y, PVOID userData) {
-	printf("Clicked on point (%d,%d) to add to the curve in index %d \n", x, y, activeIndex);
+	fprintf(stdout,"\[\033[0m\]Clicked on point (%d,%d) to add to the curve in index %d \n", x, y, activeIndex);
 	CAGD_POINT t[2];
 	cagdToObject(x, y, t);
 	CURVE_STRUCT *crv = curveArray[activeIndex];
@@ -187,7 +186,7 @@ void addBspline(int x, int y, PVOID userData) {
 		UINT* tmp2 = (UINT*)realloc(crv->weightVec, sizeof(UINT) * crv->pointNum);
 		double* tmp3 = (double*)realloc(crv->knotVec, sizeof(double) * crv->knotNum);
 		if (tmp == NULL || tmp2 == NULL ||tmp3 == NULL) {
-			fprintf(stderr, "UNEXPECTED MEMORY ERROR!\n");
+			fprintf(stderr, "\033[0;31mUNEXPECTED MEMORY ERROR!\n");
 			free(crv->pointVec);
 			free(crv->weightVec);
 			crv->pointNum--;
@@ -220,7 +219,7 @@ int activateCurveFromClick(int x, int y) {
 	for (int i = 0; i < MAX_CURVES; i++) {
 		if (curveArray[i] != NULL && (curveArray[i]->curvePolyline == picked || curveArray[i]->polyVec == picked)) {
 			cagdSetSegmentColor(curveArray[i]->curvePolyline, 255, 255, 255);
-			fprintf(stdout, "FOUND CURVE %d\n", i);
+			fprintf(stdout, "\[\033[0m\]FOUND CURVE %d\n", i);
 			cagdRedraw();
 			return i;
 		}
@@ -242,7 +241,6 @@ void tempPointTimer(int x, int y, PVOID data) {
 void displayTangentAtPoint(int index, double t) {
 
 	CAGD_POINT onCurve, onHodograph;
-	printf("\n\ndisp\n\n");
 	if (curveArray[index]->isSpline) {
 		onCurve = WeightedDeBoor(index, t);
 		onHodograph = WeightedDeBoorDerivative(index, t, onCurve);
@@ -266,7 +264,6 @@ void displayTangentAtPoint(int index, double t) {
 	cagdSetSegmentColor(crvpt, 0, 0, 255);
 	cagdSetSegmentColor(hodopt, 0, 0, 255);
 	cagdRedraw();
-	printf("\n\nflag %d \t%d %d\n\n", displayHodographFlag, crvpt, hodopt);
 	cagdRegisterCallback(CAGD_TIMER, tempPointTimer, NULL);
 }
 
@@ -335,7 +332,6 @@ void quitDrag(int x, int y, PVOID useData) {
 	helper[0].x = helper[0].y = helper[0].z = helper[1].x = helper[1].y = helper[1].z = 0.0;
 }
 void dltpoints(int x, int y, PVOID userData) {
-	printf("\n\n DLT PTS flag %d \t%d %d\n\n", displayHodographFlag, crvpt, hodopt);
 
 	if (displayHodographFlag) {
 		cagdFreeSegment(crvpt);
@@ -355,7 +351,6 @@ void displayPoint(int x, int y, PVOID userData) {
 
 
 void dragCurve(int x, int y, PVOID userData) {
-	//printf("%d, %d\n", x, y);
 	CAGD_POINT t[2];
 	cagdToObject(x, y, t);
 	t[1] = helper[1];
@@ -364,9 +359,7 @@ void dragCurve(int x, int y, PVOID userData) {
 	double newY = t[0].y - t[1].y;
 	double deltaX = newX - curveArray[activeIndex]->pointVec[0].x;
 	double deltaY = newY - curveArray[activeIndex]->pointVec[0].y;
-	//printf("%lf, %lf || %lf, %lf\n", t[0].x, t[0].y, t[1].x, t[1].y);
 	translateCurveByDelta(activeIndex, newX - curveArray[activeIndex]->pointVec[0].x, newY - curveArray[activeIndex]->pointVec[0].y);
-	printf("%d , %lf\n", displayHodographFlag, msg_t);
 	if (displayHodographFlag && msg_t >= 0.0) {
 		CAGD_POINT tangent;
 		cagdGetSegmentLocation(crvpt, &tangent);
@@ -380,14 +373,12 @@ void dragCurve(int x, int y, PVOID userData) {
 }
 
 void dragControlPoint(int x, int y, PVOID userData) {
-	printf("%d, %d\n", x, y);
 	CAGD_POINT t[2];
 	cagdToObject(x, y, t);
 
 	double newX = t[0].x;
 	double newY = t[0].y;
 
-	//printf("%lf, %lf || %lf, %lf\n", t[0].x, t[0].y, helper[1].x, helper[1].y);
 
 	curveArray[activeIndex]->pointVec[msg_idx].x = newX;
 	curveArray[activeIndex]->pointVec[msg_idx].y = newY;
@@ -414,12 +405,12 @@ void dragWeight(int x, int y, PVOID userData) {
 	// original (xw, yw, w)
 	double update = 1 / oldWeight * newWeight;
 
-	printf("old weight = %lf \told points : %lf %lf %lf\n ", oldWeight, curveArray[activeIndex]->pointVec[msg_idx].x, curveArray[activeIndex]->pointVec[msg_idx].y, curveArray[activeIndex]->pointVec[msg_idx].z);
+	fprintf(stdout,"\[\033[0m\]old weight = %lf \told points : %lf %lf %lf\n ", oldWeight, curveArray[activeIndex]->pointVec[msg_idx].x, curveArray[activeIndex]->pointVec[msg_idx].y, curveArray[activeIndex]->pointVec[msg_idx].z);
 
 	curveArray[activeIndex]->pointVec[msg_idx].x *= update;
 	curveArray[activeIndex]->pointVec[msg_idx].y *= update;
 	curveArray[activeIndex]->pointVec[msg_idx].z *= update;
-	printf("new weight = %lf \tnew points : %lf %lf %lf\n", newWeight, curveArray[activeIndex]->pointVec[msg_idx].x, curveArray[activeIndex]->pointVec[msg_idx].y, curveArray[activeIndex]->pointVec[msg_idx].z);
+	fprintf(stdout,"\[\033[0m\]new weight = %lf \tnew points : %lf %lf %lf\n", newWeight, curveArray[activeIndex]->pointVec[msg_idx].x, curveArray[activeIndex]->pointVec[msg_idx].y, curveArray[activeIndex]->pointVec[msg_idx].z);
 
 	createCurveFromIndex(activeIndex);
 }
@@ -437,7 +428,6 @@ void dragKnot(int x, int y, PVOID userData) {
 	double newY = t[0].y;
 	int knotIDX = getKnotIndexFromBreakpointIndex(msg_idx);
 	double newKnotValue = getKnotValueFromCAGDXPosition(newX, curveArray[activeIndex]->knotVec[0], curveArray[activeIndex]->knotVec[curveArray[activeIndex]->knotNum - 1]);
-	//printf("msg idx = %d, knotIdx = %d, newKnotValue = %lf\n", msg_idx, knotIDX, newKnotValue);
 	if (knotIDX != 0 && knotIDX != curveArray[activeIndex]->knotNum - 1) {
 		removeKnot(activeIndex, knotIDX);
 		knotIDX = insertKnot(activeIndex, newKnotValue);
@@ -461,9 +451,8 @@ CLICK_TYPE getClickType(int x, int y) {
 				for (int j = 0; j < n; j++) {
 					cagdToObject(x, y, helper);
 					cagdGetSegmentLocation(curveArray[i]->pointDisp[j], &helper2);
-					//printf("(%lf, %lf)  |  (%lf, %lf)\n", helper[0].x, helper[0].y, helper2.x, helper2.y);
 					if (curveArray[i]->pointDisp[j] == picked) {
-						printf("clicked on a control point!\n");
+						fprintf(stdout,"\[\033[0m\]clicked on a control point!\n");
 						activeIndex = i;
 						msg_idx = j;
 						helper[1].x = helper[0].x;
@@ -478,7 +467,7 @@ CLICK_TYPE getClickType(int x, int y) {
 			cagdToObject(x, y, helper);
 			for (int j = 0; j < n; j++) {
 				if (curveArray[i]->weightVec[j] == picked) {
-					printf("clicked on a weight circle!\n");
+					fprintf(stdout,"\[\033[0m\]clicked on a weight circle!\n");
 					activeIndex = i;
 					msg_idx = j;
 					return CLICK_WEIGHT_CIRCLE;
@@ -486,7 +475,7 @@ CLICK_TYPE getClickType(int x, int y) {
 			}
 			// if polyline polygon or curve -> move control polygon
 			if (curveArray[i]->curvePolyline == picked) {
-				printf("clicked on a curve\n");
+				fprintf(stdout, "\[\033[0m\]clicked on a curve\n");
 				activeIndex = i;
 
 				
@@ -498,13 +487,11 @@ CLICK_TYPE getClickType(int x, int y) {
 				double bestT = msg_t;
 				boolean found = FALSE;
 				for (int j = 0; j < numStepsT - 1; j++) {
-					//printf("j = %d, numSteps - 1 = %d\n", j, numStepsT - 1);
 					double ax = stepPoints[j].x, ay = stepPoints[j].y;
 					double bx = stepPoints[j+1].x, by = stepPoints[j+1].y;
 					double dx = bx - ax, dy = by - ay;
 					double len_sq = dx * dx + dy * dy; // length of the tiny polyline segment
 					double t_local = 0;
-					//printf("local t\n");
 					if (len_sq > MY_ZERO) {
 						t_local = ((helper[0].x - ax)*dx + (helper[0].y - ay)*dy) / len_sq;
 					}
@@ -514,17 +501,14 @@ CLICK_TYPE getClickType(int x, int y) {
 					double proj_y = ay + t_local * dy;
 
 					double distsquared = pow((helper[0].x - proj_x), 2) + pow((helper[0].y - proj_y), 2);
-					//printf("calc distswuared\n");
 						if (distsquared < threshold) {
 							if (curveArray[i]->isSpline) {
-								//printf("im a bspline\n");
 								int degree = curveArray[i]->order - 1;
 								double domain_min = curveArray[i]->knotVec[degree];
 								double domain_max = curveArray[i]->knotVec[curveArray[i]->knotNum - degree - 1];
 								bestT = domain_min + ((double)j + t_local) / (numStepsT - 1) * (domain_max - domain_min);
 							}
 							else {
-								printf("im a cutin\n");
 								bestT = ((double)j + t_local) / (numStepsT - 1);
 							}
 							found = TRUE;
@@ -532,7 +516,7 @@ CLICK_TYPE getClickType(int x, int y) {
 						}
 						
 						if (found) {
-							printf("Clicked on curve at t =~ %lf\n", bestT);
+							fprintf(stdout,"\[\033[0m\]Clicked on curve at t =~ %lf\n", bestT);
 						}
 				}
 				free(stepPoints);
@@ -569,7 +553,7 @@ CLICK_TYPE getClickType(int x, int y) {
 
 					double d2 = (px - proj_x) * (px - proj_x) + (py - proj_y) * (py - proj_y);
 					if (d2 < threshold) {
-						printf("Picked segment [%d - %d]\n", j, j + 1);
+						fprintf(stdout,"\[\033[0m\]Picked segment [%d - %d]\n", j, j + 1);
 						msg_idx = j;
 						found = TRUE;
 						break;
@@ -596,9 +580,9 @@ CLICK_TYPE getClickType(int x, int y) {
 		while (picked) {
 			for (int j = 0; j < KV.breakpoints_num; j++) {
 				cagdToObject(x, y, helper);
-				//printf("(%lf, %lf)  |  (%lf, %lf)\n", helper[0].x, helper[0].y, helper2.x, helper2.y);
+				//fprintf("(%lf, %lf)  |  (%lf, %lf)\n", helper[0].x, helper[0].y, helper2.x, helper2.y);
 				if (KV.knotTriangle[j] == picked) {
-					printf("clicked on a knot! point!\n");
+					fprintf(stdout,"\[\033[0m\]clicked on a knot! point!\n");
 					helper[1].x = helper[0].x;
 					helper[1].y = helper[0].y;
 					msg_idx = j;
@@ -612,7 +596,7 @@ CLICK_TYPE getClickType(int x, int y) {
 		while (picked) {
 			cagdToObject(x, y, helper);
 			if (KV.line == picked) {
-				printf("clicked on a Knot line!\n");
+				fprintf(stdout, "\[\033[0m\]clicked on a Knot line!\n");
 				helper[1].x = helper[0].x;
 				helper[1].y = helper[1].y;
 				return CLICK_KNOTLINE;
@@ -621,7 +605,7 @@ CLICK_TYPE getClickType(int x, int y) {
 		}
 		
 	}
-	printf("Didn't find anything here...\n");
+	fprintf(stdout,"\[\033[0;33m\]Didn't find anything here...\n");
 	return CLICK_NONE;
 }
 
@@ -637,12 +621,12 @@ void defaultLeftClick(int x, int y, PVOID userData) {
 	CLICK_TYPE clk = getClickType(x, y);
 	switch (clk) {
 	case CLICK_CONTROLPOINT:
-		printf("clicked on a control point!\n");
+		fprintf(stdout,"\[\033[0m\]clicked on a control point!\n");
 		cagdRegisterCallback(CAGD_MOUSEMOVE, dragControlPoint,NULL);
 		cagdRegisterCallback(CAGD_LBUTTONUP, quitDrag, NULL);
 		break;
 	case CLICK_WEIGHT_CIRCLE:
-		printf("clicked on a weight circle!\n");
+		fprintf(stdout,"\[\033[0m\]clicked on a weight circle!\n");
 		cagdRegisterCallback(CAGD_MOUSEMOVE, dragWeight, NULL);
 		cagdRegisterCallback(CAGD_LBUTTONUP, quitDrag, NULL);
 		break;
@@ -650,12 +634,12 @@ void defaultLeftClick(int x, int y, PVOID userData) {
 		displayHodographFlag = TRUE;
 		cagdRegisterCallback(CAGD_LBUTTONUP, dltpoints, NULL);
 		displayTangentAtPoint(activeIndex, msg_t);
-		printf("clicked on a curve or its control polygon\n");
+		fprintf(stdout,"\[\033[0m\]clicked on a curve \n");
 		cagdRegisterCallback(CAGD_MOUSEMOVE, dragCurve, NULL);
 		cagdRegisterCallback(CAGD_LBUTTONUP, quitDrag, NULL);
 		break;
 	case CLICK_POLYGON:
-		printf("clicked on a curve or its control polygon\n");
+		fprintf(stdout,"\[\033[0m\]clicked on a control polygon\n");
 		cagdRegisterCallback(CAGD_MOUSEMOVE, dragCurve, NULL);
 		cagdRegisterCallback(CAGD_LBUTTONUP, quitDrag, NULL);
 		break;
@@ -684,11 +668,11 @@ void myCommand(int id, int unused, PVOID userData) {
 	case MY_CREATEBEZIER:
 		
 		if (curveCount == MAX_CURVES) {
-			fprintf(stderr, "Too many curves on display! Please clear one before creating a new one!");
+			fprintf(stderr, "\033[0;31mToo many curves on display! Please clear one before creating a new one!");
 		}
 		idx = findAvailableIndex();
 		if (idx == NO_INDEX) {
-			fprintf(stderr, "Couldn't find an index... That's weird...\n");
+			fprintf(stderr, "\033[0;31mCouldn't find an index... That's weird...\n");
 		}
 		else {
 			activeIndex = idx;
@@ -709,11 +693,11 @@ void myCommand(int id, int unused, PVOID userData) {
 	case MY_CREATEBSPLINE:
 		
 		if (curveCount == MAX_CURVES) {
-			fprintf(stderr, "Too many curves on display! Please clear one before creating a new one!");
+			fprintf(stderr, "\033[0;31mToo many curves on display! Please clear one before creating a new one!");
 		}
 		idx = findAvailableIndex();
 		if (idx == NO_INDEX) {
-			fprintf(stderr, "Couldn't find an index... That's weird...\n");
+			fprintf(stderr, "\033[0;31mCouldn't find an index... That's weird...\n");
 		}
 		else {
 			activeIndex = idx;
@@ -752,21 +736,18 @@ void myCommand(int id, int unused, PVOID userData) {
 			CheckMenuItem(hMenu, id, MF_UNCHECKED);
 		}
 		drawHideAllControlPolygons();
-		fprintf(stderr, "toggle control\n");
 		break;
 	case MY_DRAWHODOGRAPHS:
 		if (lastCheckVal == MF_CHECKED) {
 			CheckMenuItem(hMenu, id, MF_UNCHECKED);
 		}
 		drawHideAllHodographs();
-		fprintf(stderr, "toggle hodo\n");
 		break;
 	case MY_DRAW_WEIGHTS:
 		if (lastCheckVal == MF_CHECKED) {
 			CheckMenuItem(hMenu, id, MF_UNCHECKED);
 		}
 		drawHideAllWeightVec();
-		fprintf(stderr, "toggle weight\n");
 		break;
 	case M_PROPERTIES:
 		CheckMenuItem(hMenu, id, MF_UNCHECKED);
@@ -830,11 +811,11 @@ void myClickCommand(int id, int unused, PVOID userData) {
 	cagdSetColor(0, 0, 0);
 	switch (id) {
 	case MY_REMOVEPOINT:{
-		cagdRegisterCallback(CAGD_LBUTTONDOWN, removePoint, NULL);
+		removePoint(0, 0, NULL);
 		break;
 	}
 	case MY_INSERTPOINT:{
-		cagdRegisterCallback(CAGD_LBUTTONDOWN, insertPoint, NULL);
+			insertPoint(helper[0].x, helper[0].y, (PVOID)userData);  // Insert immediately using helper[0]
 		break;
 	}
 	case MY_APPENDPOINT:{
@@ -1007,7 +988,7 @@ void initializeGlobals() {
 	hodopt = UINT_MAX;
 	displayHodographFlag = FALSE;
 
-	fprintf(stderr, "\033[0;31m");
+	
 }
 
 int main(int argc, char *argv[])
