@@ -1,6 +1,6 @@
 ﻿  demo.c
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(885): warning C4013: 'setCurveColor' undefined; assuming extern returning int
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(798): warning C4101: 'idx': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(1004): warning C4047: 'function': 'UINT_PTR' differs in levels of indirection from 'HMENU'
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(1004): warning C4024: 'AppendMenuA': different types for formal and actual parameter 3
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(912): warning C4013: 'setCurveColor' undefined; assuming extern returning int
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(825): warning C4101: 'idx': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(1031): warning C4047: 'function': 'UINT_PTR' differs in levels of indirection from 'HMENU'
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(1031): warning C4024: 'AppendMenuA': different types for formal and actual parameter 3
   demo.vcxproj -> C:\Users\DVASH\OneDrive - Technion\Spring25\CAGD\CAGD\CAGD_2\SkeletonC2017\demo\.\Debug\demo.exe
