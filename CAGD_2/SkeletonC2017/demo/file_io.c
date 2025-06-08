@@ -235,7 +235,7 @@ void mySave(int x, int y, PVOID userData) {
 			if (currCurve->isSpline) {
 				fprintf(fptr, "## this curve is a bspline! How fun!");
 				fprintf(fptr, "%d\n", currCurve->order);
-				fprintf("knots [%d] = \n", currCurve->knotNum);
+				fprintf(fptr,"knots [%d] = \n", currCurve->knotNum);
 				for (int i = 0; i < currCurve->knotNum; i++) {
 					fprintf(fptr, "%lf\n", currCurve->knotVec[i]);
 				}

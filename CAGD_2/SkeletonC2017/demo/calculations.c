@@ -594,12 +594,12 @@ BsplineType getBsplineT(int order, double* knotVector, int numKnots) {
 	boolean isUniform = TRUE;
 	for (int i = 2; i < numKnots; i++) {
 		if (fabs((knotVector[i] - knotVector[i - 1]) - delta) > MY_ZERO) {
-			isUniform = TRUE;
+			isUniform = FALSE;
 			break;
 		}
 	}
 
-	if (!isUniform) return BSPLINE_UNKNOWN;
+	if (isUniform) return BSPLINE_FLOATING;
 
 	boolean isClamped = TRUE;
 	for (int i = 1; i < order; i++) {
@@ -664,8 +664,7 @@ void removePointInIndex(int index, int pointIndex) {
 	pointVector = NULL;
 	crv->pointVec = newPointVector;
 	crv->pointNum = n - 1;
-	crv->pointDisp = realloc(crv->pointDisp, sizeof(int) * crv->pointNum);
-	crv->weightVec = realloc(crv->weightVec, sizeof(int) * crv->pointNum);
+	
 	if (crv->isSpline) {
 		if (crv->splineType == BSPLINE_CLAMPED) {
 			BsplineClamped(index);
@@ -703,10 +702,10 @@ void insertPointInLocation(int index, int previousPointIndex, CAGD_POINT newPoin
 	pointVector = NULL;
 	crv->pointVec = newPointVector;
 	crv->pointNum = n + 1;
-	crv->pointDisp = realloc(crv->pointDisp, sizeof(int) * (n + 1));
-	crv->weightVec = realloc(crv->weightVec, sizeof(int) * (n + 1));
+	
 	if (crv->isSpline) {
 		if (crv->splineType == BSPLINE_CLAMPED) {
+			printf("clamping....\n\n");
 			BsplineClamped(index);
 		}
 		else if (crv->splineType == BSPLINE_FLOATING) {

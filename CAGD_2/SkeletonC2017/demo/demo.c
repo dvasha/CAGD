@@ -220,7 +220,7 @@ int activateCurveFromClick(int x, int y) {
 	UINT picked = cagdPickNext();
 	for (int i = 0; i < MAX_CURVES; i++) {
 		if (curveArray[i] != NULL && (curveArray[i]->curvePolyline == picked || curveArray[i]->polyVec == picked)) {
-			cagdSetSegmentColor(curveArray[i]->curvePolyline, 255, 255, 255);
+			cagdSetSegmentColor(curveArray[i]->curvePolyline, 79, 119, 45);
 			fprintf(stdout, "\033[0mFOUND CURVE %d\n", i);
 			cagdRedraw();
 			return i;
@@ -440,8 +440,9 @@ void dragKnot(int x, int y, PVOID userData) {
 	double newX = t[0].x;
 	double newY = t[0].y;
 	int knotIDX = getKnotIndexFromBreakpointIndex(msg_idx);
+	printf("%d", knotIDX);
 	double newKnotValue = getKnotValueFromCAGDXPosition(newX, curveArray[activeIndex]->knotVec[0], curveArray[activeIndex]->knotVec[curveArray[activeIndex]->knotNum - 1]);
-	if (knotIDX != 0 && knotIDX != curveArray[activeIndex]->knotNum - 1) {
+	if (knotIDX != 0 && knotIDX < curveArray[activeIndex]->knotNum - 1) {
 		removeKnot(activeIndex, knotIDX);
 		knotIDX = insertKnot(activeIndex, newKnotValue);
 		msg_idx = getBreakPointIndexFromKnotIndex(curveArray[activeIndex], knotIDX);

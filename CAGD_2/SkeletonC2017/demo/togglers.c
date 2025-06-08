@@ -334,13 +334,33 @@ int getBreakPointIndexFromKnotIndex(CURVE_STRUCT* c, int j) {
 double getKnotValueFromCAGDXPosition(double x, double knotMin, double knotMax) {
 	// [normbreakmin, normbreakmax] - > [kmin, kmax]
 	// (old - min) / (max - min) * (kmax - kmin) + kmin
+	//double normMin = KV.normalizedBreakPoints[0];
+	//double normMax = KV.normalizedBreakPoints[KV.breakpoints_num - 1];
+	//if (normMax == normMin) return knotMin; // prevent divide-by-zero
+	//double t = (x - normMin) / (normMax - normMin);
+	//// Optional clamp
+	//if (t < 0) t = 0;
+	//if (t > 1) t = 1;
+	//CAGD_POINT linewidth[5];
+	//cagdGetSegmentLocation(KV.line, linewidth);
+	//double threshold = WIDTH_SENSITIVITY * fabs(linewidth[0].x - linewidth[1].x);
+	//for (int i = 0; i < KV.breakpoints_num; i++) {
+	//	double existing = KV.normalizedBreakPoints[i];
+	//	if (fabs(x - existing) <= threshold) {
+	//		x = existing;
+	//		break;
+	//	}
+	//}
+
+	//// Map snapped x to knotValue
+	//t = (x - normMin) / (normMax - normMin);
+	//double knotValue = t * (knotMax - knotMin) + knotMin;
+	//return knotValue;
 	double normMin = KV.normalizedBreakPoints[0];
 	double normMax = KV.normalizedBreakPoints[KV.breakpoints_num - 1];
-	if (normMax == normMin) return knotMin; // prevent divide-by-zero
-	double t = (x - normMin) / (normMax - normMin);
-	// Optional clamp
-	if (t < 0) t = 0;
-	if (t > 1) t = 1;
+	if (normMax == normMin) return knotMin;
+
+	// Snap x BEFORE computing t
 	CAGD_POINT linewidth[5];
 	cagdGetSegmentLocation(KV.line, linewidth);
 	double threshold = WIDTH_SENSITIVITY * fabs(linewidth[0].x - linewidth[1].x);
@@ -352,10 +372,12 @@ double getKnotValueFromCAGDXPosition(double x, double knotMin, double knotMax) {
 		}
 	}
 
-	// Map snapped x to knotValue
-	t = (x - normMin) / (normMax - normMin);
-	double knotValue = t * (knotMax - knotMin) + knotMin;
-	return knotValue;
+	// Normalize AFTER snapping
+	double t = (x - normMin) / (normMax - normMin);
+	if (t < 0) t = 0;
+	if (t > 1) t = 1;
+
+	return t * (knotMax - knotMin) + knotMin;
 	
 }
 
