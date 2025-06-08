@@ -1,39 +1,10 @@
 ﻿  demo.c
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(151): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(151): warning C4129: ']': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(222): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(222): warning C4129: ']': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(408): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(408): warning C4129: ']': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(413): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(413): warning C4129: ']': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(455): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(455): warning C4129: ']': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(470): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(470): warning C4129: ']': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(478): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(478): warning C4129: ']': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(519): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(519): warning C4129: ']': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(556): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(556): warning C4129: ']': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(585): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(585): warning C4129: ']': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(599): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(599): warning C4129: ']': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(608): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(608): warning C4129: ']': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(624): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(624): warning C4129: ']': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(629): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(629): warning C4129: ']': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(637): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(637): warning C4129: ']': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(642): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(642): warning C4129: ']': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(818): warning C4244: 'function': conversion from 'GLdouble' to 'int', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(893): warning C4013: 'setCurveColor' undefined; assuming extern returning int
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(806): warning C4101: 'idx': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(1012): warning C4047: 'function': 'UINT_PTR' differs in levels of indirection from 'HMENU'
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(1012): warning C4024: 'AppendMenuA': different types for formal and actual parameter 3
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(666): warning C4129: '[': unrecognized character escape sequence
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(666): warning C4129: ']': unrecognized character escape sequence
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(845): warning C4244: 'function': conversion from 'GLdouble' to 'int', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(921): warning C4013: 'setCurveColor' undefined; assuming extern returning int
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(833): warning C4101: 'idx': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(1046): warning C4047: 'function': 'UINT_PTR' differs in levels of indirection from 'HMENU'
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(1046): warning C4024: 'AppendMenuA': different types for formal and actual parameter 3
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(1065): warning C4113: 'void (__cdecl *)()' differs in parameter lists from 'CAGD_CALLBACK'
   demo.vcxproj -> C:\Users\DVASH\OneDrive - Technion\Spring25\CAGD\CAGD\CAGD_2\SkeletonC2017\demo\.\Debug\demo.exe

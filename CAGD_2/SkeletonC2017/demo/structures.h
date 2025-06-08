@@ -1,5 +1,6 @@
 #ifndef STRUCTURES_H
 #define STRUCTURES_H
+
 #include <cagd.h>
 #include <stdio.h>
 
@@ -10,6 +11,8 @@
 #define NO_CURVE -1
 #define MY_ZERO 1e-8
 #define CIRCLE_SCALE 0.1
+#define POSITIVEWEIGHTCOLOR 25, 130, 196
+#define NEGATIVEWEIGHTCOLOR 247,127,0
 
 typedef struct {
 	GLubyte   red;

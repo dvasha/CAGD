@@ -127,84 +127,6 @@ CAGD_POINT WeightedDeBoor(int index, double t) {
 	return result;
 }
 
-/*
-CAGD_POINT WeightedDeBoorDerivative(int index, double t, CAGD_POINT raw) {
-	//Based on Theorem 6.18 and NURBS wikipage.
-	int n = curveArray[index]->pointNum - 1;
-	int k = curveArray[index]->order - 2; // new order
-	int m = curveArray[index]->knotNum - 1;
-	double* knotVector = curveArray[index]->knotVec;
-	CAGD_POINT* pointVector = curveArray[index]->pointVec;
-	CAGD_POINT* Q1_pts;
-	CAGD_POINT result;
-	double domain_max;
-
-	if (curveArray[index]->splineType == BSPLINE_CLAMPED) {
-		domain_max = knotVector[n + 1];
-	}
-	else {
-		domain_max = knotVector[m - k];
-	}
-	if (t >= domain_max) {
-		t = domain_max - MY_ZERO;
-	}
-	int di; // domain index
-	for (di = k; di <= n; di++) {
-		if (t >= knotVector[di] && t < knotVector[di + 1]) {
-			break;
-		}
-	}
-	if (di > n) di = n;
-
-	double c;
-	Q1_pts = (CAGD_POINT*)malloc(sizeof(CAGD_POINT) * (k));
-	for (int i = 0; i < k; i++) {
-		double denom = (knotVector[i+di+1] - knotVector[i + di - k + 1]);
-		if (denom != 0) {
-			c = k / denom;
-		}
-		else {
-			c = k;
-		}
-
-		Q1_pts[i].x = c * (pointVector[i + di - k + 1].x - pointVector[i + di - k].x);
-		Q1_pts[i].y = c * (pointVector[i + di - k + 1].y - pointVector[i + di - k].y);
-		Q1_pts[i].z = c * (pointVector[i + di - k + 1].z - pointVector[i + di - k].z);
-
-	}
-
-	for (int p = 1; p < k; p++) {
-		for (int i = k - 1; i >= p; i--) {
-			double denom = (knotVector[i+di +1 -p] - knotVector[i + di - k]);
-			double alpha;
-			if (denom != 0) {
-				alpha = (t - knotVector[i + di - k]) / denom;
-			}
-			else {
-				alpha = 0;
-			}
-			Q1_pts[i].x = (1.0 - alpha) * Q1_pts[i - 1].x + alpha * Q1_pts[i].x;
-			Q1_pts[i].y = (1.0 - alpha) * Q1_pts[i - 1].y + alpha * Q1_pts[i].y;
-			Q1_pts[i].z = (1.0 - alpha) * Q1_pts[i - 1].z + alpha * Q1_pts[i].z;
-		}
-		//printf("di = %d, Q1_pts[%d] = (%lf, %lf, %lf), t = %lf\n", di, p,Q1_pts[p].x, Q1_pts[p].y, Q1_pts[p].z, t);
-	}
-
-
-	double w = raw.z;
-	double w_prime = Q1_pts[k - 1].z;
-
-	result.x = (Q1_pts[k - 1].x * w - raw.x * w_prime) / (w * w);
-	result.y = (Q1_pts[k - 1].y * w - raw.y * w_prime) / (w * w);
-	result.z = 0;
-
-	free(Q1_pts);
-	Q1_pts = NULL;
-	//printf("result for t = %lf is (%lf, %lf) and the raw.z = %lf, w_prime = %lf\n", t, result.x, result.y, w, w_prime);
-	return result;
-}
-*/
-
 CAGD_POINT WeightedDeBoorDerivative(int index, double t, CAGD_POINT raw) {
 	//Based on Theorem 6.18 and NURBS wikipage. 
 	int pointNum = curveArray[index]->pointNum - 1;
@@ -282,10 +204,21 @@ CAGD_POINT WeightedDeBoorDerivative(int index, double t, CAGD_POINT raw) {
 
 void translateCurveByDelta(int index, double deltaX, double deltaY) {
 	// recreate the curve entirely by moving the pointVec by delta then redrawing the line
-	for (int i = 0; i < curveArray[index]->pointNum; i++) {
+	/*for (int i = 0; i < curveArray[index]->pointNum; i++) {
 		curveArray[index]->pointVec[i].x += deltaX;
 		curveArray[index]->pointVec[i].y += deltaY;
+	}*/
+	for (int i = 0; i < curveArray[index]->pointNum; i++) {
+		CAGD_POINT* pt = &curveArray[index]->pointVec[i];
+		double w = pt->z; // stored as (xw, yw, w) ? z = w
+		double x = pt->x / w;
+		double y = pt->y / w;
+		x += deltaX;
+		y += deltaY;
+		pt->x = x * w;
+		pt->y = y * w;
 	}
+	printf("translate\n");
 	createCurveFromIndex(index);
 
 }
@@ -560,7 +493,8 @@ void createWeightCircles(int index) {
 	for (int i = 0; i < curveArray[index]->pointNum; i++) {
 		double theta = 0;
 		double step = 2 * PI / CIRCLE_PTS;
-		R = curveArray[index]->pointVec[i].z * CIRCLE_SCALE;
+		double w = curveArray[index]->pointVec[i].z;
+		R = fabs(w)  * CIRCLE_SCALE;
 		for (int j = 0; j < CIRCLE_PTS; j++) {
 			x = R * cos(theta + step * j);
 			y = R * sin(theta + step * j);
@@ -570,6 +504,13 @@ void createWeightCircles(int index) {
 		}
 		circlePoints[CIRCLE_PTS] = circlePoints[0];
 		curveArray[index]->weightVec[i] = cagdAddPolyline(circlePoints, CIRCLE_PTS + 1);
+		if (w > 0) {
+			cagdSetSegmentColor(curveArray[index]->weightVec[i], POSITIVEWEIGHTCOLOR);
+		}
+		else {
+			cagdSetSegmentColor(curveArray[index]->weightVec[i], NEGATIVEWEIGHTCOLOR);
+		}
+		
 	}
 }
 
@@ -577,8 +518,7 @@ UINT createControlPolygon(int index) {
 	CAGD_POINT * tmp = (CAGD_POINT*)malloc(sizeof(CAGD_POINT) * curveArray[index]->pointNum);
 	UINT * ct = (UINT*)malloc(sizeof(UINT) * curveArray[index]->pointNum);
 	cagdSetColor(255, 0, 0);
-	printf("createcontrolpolygon\n");
-	printCurve(index);
+	
 
 	for (int i = 0; i < curveArray[index]->pointNum; i++) {
 		tmp[i].x = curveArray[index]->pointVec[i].x / curveArray[index]->pointVec[i].z;
@@ -687,7 +627,8 @@ void removePointInIndex(int index, int pointIndex) {
 	pointVector = NULL;
 	crv->pointVec = newPointVector;
 	crv->pointNum = n - 1;
-
+	crv->pointDisp = realloc(crv->pointDisp, sizeof(int) * crv->pointNum);
+	crv->weightVec = realloc(crv->weightVec, sizeof(int) * crv->pointNum);
 	if (crv->isSpline) {
 		if (crv->splineType == BSPLINE_CLAMPED) {
 			BsplineClamped(index);
@@ -704,7 +645,7 @@ void removePointInIndex(int index, int pointIndex) {
 
 void insertPointInLocation(int index, int previousPointIndex, CAGD_POINT newPoint) {
 	newPoint.z = 1.0;
-	printCurve(index);
+	
 	CURVE_STRUCT *crv = curveArray[index];
 	clearCurveSegmentsByIndex(index);
 	int n = crv->pointNum;
@@ -725,7 +666,8 @@ void insertPointInLocation(int index, int previousPointIndex, CAGD_POINT newPoin
 	pointVector = NULL;
 	crv->pointVec = newPointVector;
 	crv->pointNum = n + 1;
-
+	crv->pointDisp = realloc(crv->pointDisp, sizeof(int) * (n + 1));
+	crv->weightVec = realloc(crv->weightVec, sizeof(int) * (n + 1));
 	if (crv->isSpline) {
 		if (crv->splineType == BSPLINE_CLAMPED) {
 			BsplineClamped(index);
@@ -738,7 +680,7 @@ void insertPointInLocation(int index, int previousPointIndex, CAGD_POINT newPoin
 		crv->order++;
 	}
 	createCurveFromIndex(index);
-	printCurve(index);
+
 
 }
 

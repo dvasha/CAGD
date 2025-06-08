@@ -47,12 +47,13 @@ void showControlPolygonOfCurve(int index) {
 }
 
 void hideControlPolygonOfCurve(int index) {
-	curveArray[index]->s.hodograph = FALSE;
+	curveArray[index]->s.controlPolygon = FALSE;
 	cagdHideSegment(curveArray[index]->polyVec);
 }
 
 void drawHideAllControlPolygons() {
 	default_ds.controlPolygon = !default_ds.controlPolygon;
+
 	for (int i = 0; i < MAX_CURVES; i++) {
 		if (curveArray[i] != NULL) {
 			if (default_ds.controlPolygon) {
@@ -83,10 +84,11 @@ void drawHideAllWeightVec() {
 	default_ds.weightVectors = !default_ds.weightVectors;
 	for (int i = 0; i < MAX_CURVES; i++) {
 		if (curveArray[i] != NULL) {
-			if (default_ds.controlPolygon) {
+			if (default_ds.weightVectors) {
 				showWeightVectorofCurve(i);
 			}
 			else {
+
 				hideWeightVectorofCurve(i);
 			}
 		}
@@ -94,9 +96,10 @@ void drawHideAllWeightVec() {
 }
 
 void hide_show_by_disp_state(int index) {
+	printf("cp %d\t hodo %d\t weight %d\n", curveArray[index]->s.controlPolygon, curveArray[index]->s.hodograph, curveArray[index]->s.weightVectors);
 	if (curveArray[index]->s.controlPolygon) {
 		showControlPolygonOfCurve(index);
-		showControlPointsOfCurve(index);
+		
 	}
 	else {
 		hideControlPolygonOfCurve(index);
@@ -109,12 +112,15 @@ void hide_show_by_disp_state(int index) {
 	}
 	if (curveArray[index]->s.weightVectors) {
 		showWeightVectorofCurve(index);
-		showControlPointsOfCurve(index);
+		
 	}
 	else {
 		hideWeightVectorofCurve(index);
 	}
-	if (!(curveArray[index]->s.weightVectors) && !(curveArray[index]->s.controlPolygon)) {
+	if (curveArray[index]->s.weightVectors || curveArray[index]->s.controlPolygon) {
+		showControlPointsOfCurve(index);
+	}
+	else {
 		hideControlPointsOfCurve(index);
 	}
 	cagdSetSegmentColor(curveArray[index]->curvePolyline, curveArray[index]->s.curveColor.red, curveArray[index]->s.curveColor.green, curveArray[index]->s.curveColor.blue);
@@ -259,7 +265,6 @@ void showKnotDisplay(int index) {
 	// draw all triangles
 	for (int i = 0; i < break_s; i++) {
 		tri_num = (mult[i] + 1) * 2;
-		//printf("\nfor normalized break point index %d the value is %lf \n", i, KV.normalizedBreakPoints[i]);
 		trianglePolylineVector[i] = createTriangleShapes(KV.normalizedBreakPoints[i], line_h, mult[i]);
 	}
 	KV.knotTriangle = trianglePolylineVector;
@@ -302,6 +307,7 @@ void hideKnotDisplay(int curveIndex) {
 void clearCheck(UINT id) {
 	CheckMenuItem(connectMenu, id, MF_UNCHECKED);
 }
+
 
 
 int getKnotIndexFromBreakpointIndex(int j) {
@@ -372,4 +378,13 @@ void setCurveColor(int index, BYTE r, BYTE g, BYTE b) {
 	curveArray[index]->s.curveColor.green = g;
 	curveArray[index]->s.curveColor.blue = b;
 	cagdSetSegmentColor(curveArray[index]->curvePolyline, r, g, b);
+}
+
+
+void myExit() {
+	printf("EXIIIIIIIIIIIIIIIIIIIIIITTTT\n\n\n");
+	removeAllCurves();
+	if (KV.index != NO_INDEX) {
+		hideKnotDisplay(KV.index);
+	}
 }

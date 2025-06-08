@@ -35,4 +35,7 @@ int getKnotIndexFromBreakpointIndex(int j);
 double getKnotValueFromCAGDXPosition(double x, double knotMin, double knotMax);
 
 void clearCheck(enum i);
+
+
+void myExit();
 #endif

@@ -4,6 +4,7 @@
 *************************************************************************/
 #include "cagd.h"
 #include "internal.h"
+extern void myExit();
 
 #define LOINT(x) ((int)(short)LOWORD(x))
 #define HIINT(x) ((int)(short)HIWORD(x))
@@ -50,6 +51,7 @@ static OPENFILENAME openFileName = {
 
 BOOL cagdRegisterCallback(UINT message, CAGD_CALLBACK function, PVOID data)
 {
+	
   if(message < CAGD_LAST){
     list[message].callback = function;
     list[message].data = data;
@@ -99,6 +101,7 @@ static LRESULT CALLBACK command(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
       return 0;
     case CAGD_EXIT:
       PostQuitMessage(0);
+	  myExit();
       KillTimer(hWnd, 0);
       return 0;
     case CAGD_ORTHO:
