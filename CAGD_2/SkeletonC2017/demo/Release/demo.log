@@ -1,33 +1,20 @@
-﻿  calculations.c
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\calculations.c(416): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\calculations.c(416): warning C4129: ']': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\calculations.c(427): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\calculations.c(427): warning C4129: ']': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\calculations.c(431): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\calculations.c(431): warning C4129: ']': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\calculations.c(439): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\calculations.c(460): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\calculations.c(698): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\calculations.c(698): warning C4129: ']': unrecognized character escape sequence
-  demo.c
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(664): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(664): warning C4129: ']': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(843): warning C4244: 'function': conversion from 'GLdouble' to 'int', possible loss of data
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(919): warning C4013: 'setCurveColor' undefined; assuming extern returning int
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(831): warning C4101: 'idx': unreferenced local variable
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(1042): warning C4047: 'function': 'UINT_PTR' differs in levels of indirection from 'HMENU'
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(1042): warning C4024: 'AppendMenuA': different types for formal and actual parameter 3
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(1061): warning C4113: 'void (__cdecl *)()' differs in parameter lists from 'CAGD_CALLBACK'
+﻿  demo.c
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(665): warning C4129: '[': unrecognized character escape sequence
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(665): warning C4129: ']': unrecognized character escape sequence
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(844): warning C4244: 'function': conversion from 'GLdouble' to 'int', possible loss of data
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(920): warning C4013: 'setCurveColor' undefined; assuming extern returning int
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(832): warning C4101: 'idx': unreferenced local variable
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(1049): warning C4047: 'function': 'UINT_PTR' differs in levels of indirection from 'HMENU'
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(1049): warning C4024: 'AppendMenuA': different types for formal and actual parameter 3
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\demo.c(1068): warning C4113: 'void (__cdecl *)()' differs in parameter lists from 'CAGD_CALLBACK'
   file_io.c
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\file_io.c(25): warning C4013: 'findAvailableIndex' undefined; assuming extern returning int
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\file_io.c(93): warning C4047: 'initializing': 'UINT' differs in levels of indirection from 'UINT *'
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\file_io.c(128): warning C4133: 'function': incompatible types - from 'char [15]' to 'FILE *const '
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\file_io.c(128): warning C4047: 'function': 'const char *const ' differs in levels of indirection from 'int'
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\file_io.c(128): warning C4024: 'fprintf': different types for formal and actual parameter 2
-  leftovers.c
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\file_io.c(141): warning C4013: 'findAvailableIndex' undefined; assuming extern returning int
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\file_io.c(197): warning C4047: 'initializing': 'UINT' differs in levels of indirection from 'void *'
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\file_io.c(238): warning C4133: 'function': incompatible types - from 'char [15]' to 'FILE *const '
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\file_io.c(238): warning C4047: 'function': 'const char *const ' differs in levels of indirection from 'int'
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\file_io.c(238): warning C4024: 'fprintf': different types for formal and actual parameter 2
   togglers.c
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\togglers.c(219): warning C4129: '[': unrecognized character escape sequence
-c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\togglers.c(219): warning C4129: ']': unrecognized character escape sequence
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\togglers.c(205): warning C4129: '[': unrecognized character escape sequence
+c:\users\dvash\onedrive - technion\spring25\cagd\cagd\cagd_2\skeletonc2017\demo\togglers.c(205): warning C4129: ']': unrecognized character escape sequence
   Generating Code...
-  Source.cpp
   demo.vcxproj -> C:\Users\DVASH\OneDrive - Technion\Spring25\CAGD\CAGD\CAGD_2\SkeletonC2017\demo\.\Release\demo.exe

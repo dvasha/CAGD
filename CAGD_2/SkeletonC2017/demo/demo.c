@@ -23,8 +23,11 @@ void resetConnectArray() {
 
 int findAvailableIndex() {
 	for (int i = 0; i < MAX_CURVES; i++) {
-		if (curveArray[i] == NULL)
+		if (curveArray[i] == NULL) {
+			
 			return i;
+		}
+		
 	}
 	return NO_INDEX;
 }
@@ -93,36 +96,39 @@ void rainbowify(BYTE* r, BYTE* g, BYTE* b) {
 }
 
 void addBezier(int x, int y, PVOID userData) {
+
 	CAGD_POINT t[2];
 	cagdToObject(x, y, t);
 	CURVE_STRUCT *crv = curveArray[activeIndex];
+	if (curveArray[activeIndex] == NULL) {
+		curveArray[activeIndex] = (CURVE_STRUCT*)calloc(1, sizeof(CURVE_STRUCT));
+		printf("what the fuck??\n");
+	}
+	crv = curveArray[activeIndex];
 	if (crv->pointVec == NULL) {
 		crv->pointNum = 1;
 		crv->pointVec = (CAGD_POINT*)malloc(sizeof(CAGD_POINT));
-		crv->weightVec = (UINT*)malloc(sizeof(UINT));
-		crv->pointDisp = (UINT*)malloc(sizeof(UINT));
+		//crv->weightVec = (UINT*)malloc(sizeof(UINT));
+		crv->pointDisp = NULL;
+		crv->weightVec = NULL;
+		//crv->pointDisp = (UINT*)malloc(sizeof(UINT));
 		crv->pointVec[0].x = t[0].x;
 		crv->pointVec[0].y = t[0].y;
 		crv->pointVec[0].z = (double)1;
 		crv->hodograph = NO_CURVE;
 		crv->curvePolyline = NO_CURVE;
-		crv->pointDisp[0] = cagdAddPoint(&(crv->pointVec[0]));
+		
 		crv->s = default_ds;
-		printf("new curve just launched");
+		
 		//cagdSetColor(255, 0, 0);
 	}
 	else {
-
-		for (int i = 0; i < crv->pointNum; i++) {
-			cagdFreeSegment(crv->weightVec[i]);
-		}
-		cagdFreeSegment(crv->curvePolyline);
-		cagdFreeSegment(crv->polyVec);
-
+		// clear segments
+		clearCurveSegmentsByIndex(activeIndex);
 		crv->pointNum++;
 		CAGD_POINT* tmp = (CAGD_POINT*)realloc(crv->pointVec, sizeof(CAGD_POINT) * crv->pointNum);
-		UINT* tmp2 = (UINT*)realloc(crv->weightVec, sizeof(UINT) * crv->pointNum);
-		if (tmp == NULL || tmp2 == NULL) {
+		
+		if (tmp == NULL ) {
 			fprintf(stderr, "\033[0;31m UNEXPECTED MEMORY ERROR!\n");
 			free(crv->pointVec);
 			free(crv->weightVec);
@@ -130,13 +136,8 @@ void addBezier(int x, int y, PVOID userData) {
 			return;
 		}
 		crv->pointVec = tmp;
-		crv->weightVec = tmp2;
-		//BYTE r, g, b;
-		//cagdGetSegmentColor(crv->polyVec, &r, &g, &b);
-		//rainbowify(&r, &g, &b);
-		//cagdSetColor(r, g, b);
+		
 	}
-	
 	
 
 	crv->order = crv->pointNum - 1;
@@ -161,8 +162,10 @@ void addBspline(int x, int y, PVOID userData) {
 		crv->knotNum = 1;
 		crv->order = defaultDegree + 1;
 		crv->pointVec = (CAGD_POINT*)malloc(sizeof(CAGD_POINT));
-		crv->weightVec = (UINT*)malloc(sizeof(UINT));
-		crv->pointDisp = (UINT*)malloc(sizeof(UINT));
+		/*crv->weightVec = (UINT*)malloc(sizeof(UINT));
+		crv->pointDisp = (UINT*)malloc(sizeof(UINT));*/
+		crv->pointDisp = NULL;
+		crv->weightVec = NULL;
 		crv->knotVec = (double*)malloc(sizeof(double));
 		crv->pointVec[0].x = t[0].x;
 		crv->pointVec[0].y = t[0].y;
@@ -171,24 +174,24 @@ void addBspline(int x, int y, PVOID userData) {
 		crv->polyVec = NO_CURVE;
 		crv->curvePolyline = NO_CURVE;
 		crv->hodograph = NO_CURVE;
-		crv->pointDisp[0] = cagdAddPoint(&(crv->pointVec[0]));
+		
 		crv->s = default_ds;
+		
 		//cagdSetColor(255, 0, 0);
 	}
 	else {
 
-		for (int i = 0; i < crv->pointNum; i++) {
-			cagdFreeSegment(crv->weightVec[i]);
-		}
-		cagdFreeSegment(crv->polyVec);
+		clearCurveSegmentsByIndex(activeIndex);
 
 		crv->pointNum++;
 		crv->knotNum = crv->pointNum + crv->order;
 		
 		CAGD_POINT* tmp = (CAGD_POINT*)realloc(crv->pointVec, sizeof(CAGD_POINT) * crv->pointNum);
-		UINT* tmp2 = (UINT*)realloc(crv->weightVec, sizeof(UINT) * crv->pointNum);
+		//UINT* tmpDisp = realloc(crv->pointDisp, sizeof(UINT) * crv->pointNum);
+		//crv->pointDisp = tmpDisp;
+		//UINT* tmp2 = (UINT*)realloc(crv->weightVec, sizeof(UINT) * crv->pointNum);
 		double* tmp3 = (double*)realloc(crv->knotVec, sizeof(double) * crv->knotNum);
-		if (tmp == NULL || tmp2 == NULL ||tmp3 == NULL) {
+		if (tmp == NULL ) {
 			fprintf(stderr, "\033[0;31mUNEXPECTED MEMORY ERROR!\n");
 			free(crv->pointVec);
 			free(crv->weightVec);
@@ -196,7 +199,6 @@ void addBspline(int x, int y, PVOID userData) {
 			return;
 		}
 		crv->pointVec = tmp;
-		crv->weightVec = tmp2;
 		crv->knotVec = tmp3;
 
 		crv->pointVec[(crv->pointNum) - 1].x = t[0].x;
@@ -207,10 +209,7 @@ void addBspline(int x, int y, PVOID userData) {
 			crv->knotVec[i] = (double)i;
 		}
 
-		//BYTE r, g, b;
-		//cagdGetSegmentColor(crv->polyVec, &r, &g, &b);
-		//rainbowify(&r, &g, &b);
-		//cagdSetColor(r, g, b);
+		
 	}
 	createCurveFromIndex(activeIndex);
 	cagdRedraw();
@@ -449,7 +448,6 @@ void dragKnot(int x, int y, PVOID userData) {
 		createCurveFromIndex(activeIndex);
 	}
 	showKnotDisplay(activeIndex);
-
 }
 
 
@@ -540,7 +538,9 @@ CLICK_TYPE getClickType(int x, int y) {
 						}
 				}
 				free(stepPoints);
+				stepPoints = NULL;
 				free(tSamples);
+				tSamples = NULL;
 
 				helper[1].x = helper[0].x - curveArray[activeIndex]->pointVec[0].x;
 				helper[1].y = helper[0].y - curveArray[activeIndex]->pointVec[0].y;
@@ -586,6 +586,7 @@ CLICK_TYPE getClickType(int x, int y) {
 				helper[1].y = helper[0].y - curveArray[activeIndex]->pointVec[0].y;
 				helper[1].z = 0;
 				free(tmp);
+				tmp = NULL;
 				if (found) {
 					helper[0].x = proj_x;
 					helper[0].y = proj_y;
@@ -957,6 +958,8 @@ void openRightMenu(int x, int y, PVOID userData) {
 			AppendMenu(contextMenu, MF_STRING, MY_BSPLINEFLOAT, "Change B-Spline to Floating End");
 			AppendMenu(contextMenu, MF_STRING, MY_BSPLINECLAMPED, "Change B-Spline to Open End");
 			AppendMenu(contextMenu, MF_STRING, MY_VIEWKNOTS, "View Knots");
+			
+
 			if (crv->splineType == BSPLINE_FLOATING) {
 				EnableMenuItem(contextMenu, MY_BSPLINEFLOAT, MF_GRAYED);
 			}
@@ -989,7 +992,11 @@ void openRightMenu(int x, int y, PVOID userData) {
 	
 	DestroyMenu(contextMenu);
 }
-
+void attachConsole() {
+	AllocConsole();
+	freopen("CONOUT$", "w", stdout);
+	freopen("CONOUT$", "w", stderr);
+}
 void initializeGlobals() {
 	curveCount = 0;
 	stepSize = 0.01;
@@ -1017,7 +1024,7 @@ void initializeGlobals() {
 	hodopt = UINT_MAX;
 	displayHodographFlag = FALSE;
 	
-	
+	attachConsole();
 }
 
 

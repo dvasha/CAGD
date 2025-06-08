@@ -358,16 +358,44 @@ void ConnectC1Aux() {
 
 
 void clearCurveSegmentsByIndex(int index) {
-	if (curveArray[index] != NULL) {
-		cagdFreeSegment(curveArray[index]->curvePolyline);
-		cagdFreeSegment(curveArray[index]->polyVec);
-		for (int i = 0; i < curveArray[index]->pointNum; i++) {
-			cagdFreeSegment(curveArray[index]->weightVec[i]);
-			if (curveArray[index]->pointDisp)
-				cagdFreeSegment(curveArray[index]->pointDisp[i]);
+	if (!curveArray[index]) return;
+	CURVE_STRUCT *crv = curveArray[index];
+
+	if (crv->curvePolyline != NO_CURVE) {
+		cagdFreeSegment(crv->curvePolyline);
+		crv->curvePolyline = NO_CURVE;
+	}
+
+	if (crv->polyVec != NO_CURVE) {
+		cagdFreeSegment(crv->polyVec);
+		crv->polyVec = NO_CURVE;
+	}
+
+	if (crv->weightVec) {
+		for (int i = 0; i < crv->pointNum; ++i) {
+			if (crv->weightVec[i] != NO_CURVE) {
+				cagdFreeSegment(crv->weightVec[i]);
+				crv->weightVec[i] = NO_CURVE;
+			}
 		}
-		if (curveArray[index]->hodograph != NO_CURVE)
-			cagdFreeSegment(curveArray[index]->hodograph);
+		free(crv->weightVec);
+		crv->weightVec = NULL;
+	}
+
+	if (crv->pointDisp) {
+		for (int i = 0; i < crv->pointNum; ++i) {
+			if (crv->pointDisp[i] != NO_CURVE) {
+				cagdFreeSegment(crv->pointDisp[i]);
+				crv->pointDisp[i] = NO_CURVE;
+			}
+		}
+		free(crv->pointDisp);
+		crv->pointDisp = NULL;
+	}
+
+	if (crv->hodograph != NO_CURVE) {
+		cagdFreeSegment(crv->hodograph);
+		crv->hodograph = NO_CURVE;
 	}
 }
 
@@ -385,6 +413,7 @@ void removeCurveFromIndex(int index) {
 	}
 	free(curveArray[index]);
 	curveArray[index] = NULL;
+	curveCount--;
 }
 
 void removeAllCurves() {
@@ -394,7 +423,8 @@ void removeAllCurves() {
 }
 
 void printCurve(int index) {
-	printf("curve index = %d \n", index);
+	
+printf("curve index = %d \n", index);
 	printf("isSpline = %d \n", curveArray[index]->isSpline);
 	printf("order = %d \n", curveArray[index]->order);
 
@@ -417,12 +447,14 @@ void createcurvePolyline(int index) {
 		return;
 	}
 	//printCurve(index);
-
+	curveCount++;
 	if (curveArray[index]->pointNum == 1) {
 		return;
 	}
+	
 	//BSPLINE check order!!!!
 	if (curveArray[index]->isSpline) {
+		
 		if (curveArray[index]->pointNum < curveArray[index]->order) {
 			fprintf(stderr, "\[\033[0;31m\]Not enough points to display a curve yet\n");
 			return;
@@ -457,6 +489,8 @@ void createcurvePolyline(int index) {
 	}
 	//BEZIER
 	else {
+		
+
 		int totalsteps = (1 / stepSize) + 1;
 		CAGD_POINT* vec = (CAGD_POINT*)malloc(sizeof(CAGD_POINT) * totalsteps);
 		CAGD_POINT* hodovec = (CAGD_POINT*)malloc(sizeof(CAGD_POINT) * totalsteps);
@@ -485,10 +519,12 @@ void createcurvePolyline(int index) {
 		free(vec);
 	}
 	//printCurve(index);
+	
 }
 
 void createWeightCircles(int index) {
 	CAGD_POINT circlePoints[CIRCLE_PTS + 1];
+	curveArray[index]->weightVec = (UINT)malloc(sizeof(UINT) * curveArray[index]->pointNum);
 	double x, y, R;
 	for (int i = 0; i < curveArray[index]->pointNum; i++) {
 		double theta = 0;
@@ -533,6 +569,7 @@ UINT createControlPolygon(int index) {
 	curveArray[index]->polyVec = res;
 	if (curveArray[index]->pointDisp) {
 		free(curveArray[index]->pointDisp);
+		curveArray[index]->pointDisp = NULL;
 	}
 	curveArray[index]->pointDisp = ct;
 	return res;
@@ -547,34 +584,34 @@ void createCurveFromIndex(int index) {
 	if (KV.index == index) {
 		showKnotDisplay(index);
 	}
+	cagdRedraw();
 }
 
 BsplineType getBsplineT(int order, double* knotVector, int numKnots) {
 	BsplineType bsplineT = BSPLINE_UNKNOWN;
+
+	double delta = knotVector[1] - knotVector[0];
+	boolean isUniform = TRUE;
+	for (int i = 2; i < numKnots; i++) {
+		if (fabs((knotVector[i] - knotVector[i - 1]) - delta) > MY_ZERO) {
+			isUniform = TRUE;
+			break;
+		}
+	}
+
+	if (!isUniform) return BSPLINE_UNKNOWN;
+
 	boolean isClamped = TRUE;
-	for (int i = 1; i <= order - 1; i++) {
-		if (knotVector[i] != knotVector[0] || knotVector[numKnots - 1 - i] != knotVector[numKnots - 1]) {
+	for (int i = 1; i < order; i++) {
+		if (fabs(knotVector[i] - knotVector[0]) > MY_ZERO ||
+			fabs(knotVector[numKnots - 1 - i] - knotVector[numKnots - 1]) > MY_ZERO) {
 			isClamped = FALSE;
 			break;
 		}
 	}
-	if (isClamped) {
-		bsplineT = BSPLINE_CLAMPED;
-	}
-	else {
-		double delta = knotVector[1] - knotVector[0];
-		boolean isUniform = TRUE;
-		for (int i = 2; i <= numKnots - 1; i++) {
-			if (fabs(knotVector[i] - knotVector[i - 1] - delta) > MY_ZERO) {
-				isUniform = FALSE;
-				break;
-			}
-		}
-		if (isUniform) {
-			bsplineT = BSPLINE_FLOATING;
-		}
-	}
-	return bsplineT;
+
+
+	return isClamped ? BSPLINE_CLAMPED : BSPLINE_FLOATING;
 }
 
 void BsplineFloating(int index) {

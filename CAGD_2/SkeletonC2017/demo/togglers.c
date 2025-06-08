@@ -17,12 +17,8 @@ void drawHideAllHodographs() {
 	default_ds.hodograph = !default_ds.hodograph;
 	for (int i = 0; i < MAX_CURVES; i++) {
 		if (curveArray[i] != NULL) {
-			if (default_ds.hodograph) {
-				showHodographofCurve(i);
-			}
-			else {
-				hideHodographofCurve(i);
-			}
+			curveArray[i]->s.hodograph = default_ds.hodograph;
+			hide_show_by_disp_state(i);
 		}
 	}
 
@@ -56,12 +52,8 @@ void drawHideAllControlPolygons() {
 
 	for (int i = 0; i < MAX_CURVES; i++) {
 		if (curveArray[i] != NULL) {
-			if (default_ds.controlPolygon) {
-				showControlPolygonOfCurve(i);
-			}
-			else {
-				hideControlPolygonOfCurve(i);
-			}
+			curveArray[i]->s.controlPolygon = default_ds.controlPolygon;
+			hide_show_by_disp_state(i);
 		}
 	}
 }
@@ -84,19 +76,13 @@ void drawHideAllWeightVec() {
 	default_ds.weightVectors = !default_ds.weightVectors;
 	for (int i = 0; i < MAX_CURVES; i++) {
 		if (curveArray[i] != NULL) {
-			if (default_ds.weightVectors) {
-				showWeightVectorofCurve(i);
-			}
-			else {
-
-				hideWeightVectorofCurve(i);
-			}
+			curveArray[i]->s.weightVectors = default_ds.weightVectors;
+			hide_show_by_disp_state(i);
 		}
 	}
 }
 
 void hide_show_by_disp_state(int index) {
-	printf("cp %d\t hodo %d\t weight %d\n", curveArray[index]->s.controlPolygon, curveArray[index]->s.hodograph, curveArray[index]->s.weightVectors);
 	if (curveArray[index]->s.controlPolygon) {
 		showControlPolygonOfCurve(index);
 		
